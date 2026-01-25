@@ -18,8 +18,14 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
+
+def health_check(request):
+    """Health check endpoint for Render"""
+    return JsonResponse({"status": "ok"})
 
 urlpatterns = [
+    path("", health_check),  # Health check pour Render
     path('admin/', admin.site.urls),
     path('api/', include('account.urls')),
     path('api/', include('products.urls')),
