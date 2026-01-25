@@ -43,7 +43,7 @@ services:
           format: https://${host}/api
 
   # Base de données PostgreSQL
-  - type: postgresql
+  - type: postgres
     name: super-dkf-db
     region: frankfurt
     plan: free

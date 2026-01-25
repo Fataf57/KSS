@@ -5,7 +5,7 @@ L'erreur `unknown type "pg"` indique que Render ne reconnaît pas le type `pg` p
 
 ## Solution 1 : Type corrigé (recommandé)
 
-J'ai corrigé le fichier `render.yaml` en remplaçant `type: pg` par `type: postgresql`.
+J'ai corrigé le fichier `render.yaml` en remplaçant `type: pg` par `type: postgres` (le type correct pour Render).
 
 **Fichier corrigé :** `render.yaml`
 
@@ -58,7 +58,7 @@ Selon la documentation Render, les types de services supportés dans `render.yam
 - `web` - Service web (backend/frontend)
 - `worker` - Service worker
 - `cron` - Tâches planifiées
-- `postgresql` - Base de données PostgreSQL (peut varier selon la version de Render)
+- `postgres` - Base de données PostgreSQL (type correct)
 
-Si `postgresql` ne fonctionne pas, utilisez la Solution 2 (création manuelle).
+Le type `postgres` est maintenant utilisé dans le fichier `render.yaml`.
 
