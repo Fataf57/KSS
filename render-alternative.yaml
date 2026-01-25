@@ -14,10 +14,8 @@ services:
         generateValue: true
       - key: DEBUG
         value: "False"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: super-dkf-db
-          property: connectionString
+      # Note: DATABASE_URL doit être configuré manuellement après avoir créé la base de données PostgreSQL
+      # Allez dans le dashboard Render, créez une base PostgreSQL, puis ajoutez DATABASE_URL ici
       - key: ALLOWED_HOSTS
         value: super-dkf-backend.onrender.com
       - key: CORS_ALLOWED_ORIGINS
@@ -42,11 +40,6 @@ services:
           property: host
           format: https://${host}/api
 
-  # Base de données PostgreSQL
-  - type: postgresql
-    name: super-dkf-db
-    region: frankfurt
-    plan: free
-    databaseName: super_dkf
-    user: super_dkf_user
+# Note: Créez la base de données PostgreSQL manuellement via le dashboard Render
+# Ensuite, ajoutez la variable DATABASE_URL dans les variables d'environnement du backend
 
