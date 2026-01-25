@@ -1,12 +1,15 @@
 services:
-  # Service Backend Django
+  # =========================
+  # Backend Django
+  # =========================
   - type: web
     name: super-dkf-backend
     env: python
     region: frankfurt
     plan: free
-    buildCommand: cd my_store && pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: cd my_store && chmod +x start.sh && ./start.sh
+    rootDir: my_store
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: python manage.py migrate --noinput && gunicorn my_store.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -19,19 +22,22 @@ services:
           name: super-dkf-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: super-dkf-backend.onrender.com
+        value: .onrender.com
       - key: CORS_ALLOWED_ORIGINS
         value: https://super-dkf-frontend.onrender.com
-    healthCheckPath: /api/
+    healthCheckPath: /
 
-  # Service Frontend React
+  # =========================
+  # Frontend React
+  # =========================
   - type: web
     name: super-dkf-frontend
     env: node
     region: frankfurt
     plan: free
-    buildCommand: cd react-app && npm install && npm run build
-    startCommand: cd react-app && npm run preview -- --host 0.0.0.0 --port $PORT
+    rootDir: react-app
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview -- --host 0.0.0.0 --port $PORT
     envVars:
       - key: NODE_VERSION
         value: 20.18.0
@@ -42,11 +48,10 @@ services:
           property: host
           format: https://${host}/api
 
-  # Base de données PostgreSQL
-  - type: postgres
-    name: super-dkf-db
+databases:
+  # =========================
+  # PostgreSQL (SEULEMENT ICI)
+  # =========================
+  - name: super-dkf-db
     region: frankfurt
     plan: free
-    databaseName: super_dkf
-    user: super_dkf_user
-
