@@ -54,7 +54,7 @@ services:
           name: super-dkf-backend
           type: web
           property: host
-          format: https://${host}/api
+          format: ${host}/api
 
 databases:
   # =========================
