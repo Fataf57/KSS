@@ -25,6 +25,14 @@ services:
         value: .onrender.com
       - key: CORS_ALLOWED_ORIGINS
         value: https://super-dkf-frontend.onrender.com
+      - key: CREATE_SUPERUSER
+        value: "True"
+      - key: SUPERUSER_USERNAME
+        value: "admin"
+      - key: SUPERUSER_EMAIL
+        value: "admin@example.com"
+      - key: SUPERUSER_PASSWORD
+        generateValue: true
     healthCheckPath: /
 
   # =========================

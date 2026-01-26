@@ -189,3 +189,9 @@ CORS_ALLOW_HEADERS = [
 # Pour le développement, autoriser toutes les origines (à retirer en production)
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = False  # On garde False pour la sécurité, mais on a listé les origines
+
+# Configuration pour créer un superuser automatiquement sur Render
+CREATE_SUPERUSER = os.environ.get("CREATE_SUPERUSER", "False") == "True"
+SUPERUSER_USERNAME = os.environ.get("SUPERUSER_USERNAME", "admin")
+SUPERUSER_EMAIL = os.environ.get("SUPERUSER_EMAIL", "admin@example.com")
+SUPERUSER_PASSWORD = os.environ.get("SUPERUSER_PASSWORD", "admin123")
