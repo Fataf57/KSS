@@ -24,7 +24,7 @@ interface EntreeStockRow {
 }
 const STORAGE_KEY = "stock_entries_rows";
 
-const TYPES_DENREE_PREDEFINIS = ["Maïs", "Karité", "Fissan", "Soza"];
+const TYPES_DENREE_PREDEFINIS = ["Anacarde", "Karité", "Sesame", "Soza", "Mais"];
 
 const MOIS_FRANCAIS = [
   "Janvier",
@@ -289,6 +289,13 @@ export default function EntreesStock() {
   };
 
   const validateRow = (row: EntreeStockRow): string | null => {
+    // Permettre l'enregistrement si la ligne est complètement vide
+    const isRowEmpty = !row.date && !row.type_operation && !row.nom_fournisseur?.trim() && 
+                       !row.type_denree?.trim() && (!row.nombre_sacs || row.nombre_sacs <= 0) && 
+                       (!row.poids_par_sac || row.poids_par_sac <= 0) && !row.numero_magasin;
+    if (isRowEmpty) return null;
+    
+    // Si au moins un champ est rempli, valider les champs requis
     if (!row.date) return "La date est requise";
     if (!row.type_operation) return "Le type d'opération est requis";
     if (row.type_operation === 'entree' && !row.nom_fournisseur.trim()) {
@@ -468,7 +475,7 @@ export default function EntreesStock() {
       <div className="flex flex-col h-full">
         <div className="flex-shrink-0 mb-4">
           <PageHeader
-            title="Entrées et Sorties de Stock"
+            title="Magasin"
             description=""
             icon={Package}
             action={
@@ -693,9 +700,10 @@ export default function EntreesStock() {
           )}
         </div>
       </div>
+      {/* Bouton flottant pour ajouter une ligne */}
       <Button
         onClick={addRow}
-        className="fixed bottom-2 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+        className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
         size="icon"
       >
         <Plus size={24} />

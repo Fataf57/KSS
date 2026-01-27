@@ -198,10 +198,6 @@ export default function Avances() {
             icon={DollarSign}
             action={
               <div className="flex gap-2">
-                <Button onClick={addRow} className="gap-2">
-                  <Plus size={16} />
-                  Nouvelle avance
-                </Button>
                 <Button
                   variant="secondary"
                   onClick={handleSaveAll}
@@ -494,6 +490,15 @@ export default function Avances() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Bouton flottant pour ajouter une ligne */}
+      <Button
+        onClick={addRow}
+        className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+        size="icon"
+      >
+        <Plus size={24} />
+      </Button>
     </DashboardLayout>
   );
 }

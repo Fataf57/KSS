@@ -28,11 +28,17 @@ class AchatSerializer(serializers.ModelSerializer):
         return obj.produit.name if obj.produit else obj.nom_produit
 
     def validate_quantite_kg(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("La quantité doit être positive.")
+        # Permettre les valeurs nulles ou zéro pour les lignes vides
+        if value is None or value == 0:
+            return value
+        if value < 0:
+            raise serializers.ValidationError("La quantité ne peut pas être négative.")
         return value
 
     def validate_prix_unitaire(self, value):
+        # Permettre les valeurs nulles ou zéro pour les lignes vides
+        if value is None or value == 0:
+            return value
         if value < 0:
             raise serializers.ValidationError("Le prix unitaire ne peut pas être négatif.")
         return value
@@ -49,16 +55,29 @@ class AchatCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_quantite_kg(self, value):
-        if value <= 0:
-            raise serializers.ValidationError("La quantité doit être positive.")
+        # Permettre les valeurs nulles ou zéro pour les lignes vides
+        if value is None or value == 0:
+            return value
+        if value < 0:
+            raise serializers.ValidationError("La quantité ne peut pas être négative.")
         return value
 
     def validate_prix_unitaire(self, value):
+        # Permettre les valeurs nulles ou zéro pour les lignes vides
+        if value is None or value == 0:
+            return value
         if value < 0:
             raise serializers.ValidationError("Le prix unitaire ne peut pas être négatif.")
         return value
 
     def validate(self, data):
+        # Permettre l'enregistrement si tous les champs sont vides
+        is_empty = (not data.get('produit') and not data.get('nom_produit') and 
+                   (not data.get('quantite_kg') or data.get('quantite_kg', 0) == 0))
+        if is_empty:
+            return data  # Permettre les lignes complètement vides
+        
+        # Si au moins un champ est rempli, valider les champs requis
         if not data.get('produit') and not data.get('nom_produit'):
             raise serializers.ValidationError({
                 'nom_produit': "Vous devez fournir soit un produit existant, soit un nom de produit."
@@ -125,6 +144,16 @@ class EntreeAchatCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
+        # Permettre l'enregistrement si tous les champs sont vides
+        is_empty = (not data.get('client') and not data.get('nom_client') and 
+                   not data.get('achats') or len(data.get('achats', [])) == 0)
+        if is_empty:
+            # Convertir les chaînes vides de numero_entree en None pour que le modèle génère automatiquement
+            if 'numero_entree' in data and data['numero_entree'] and not data['numero_entree'].strip():
+                data['numero_entree'] = None
+            return data  # Permettre les entrées complètement vides
+        
+        # Si au moins un champ est rempli, valider les champs requis
         if not data.get('client') and not data.get('nom_client'):
             raise serializers.ValidationError({
                 'nom_client': "Vous devez fournir soit un client existant, soit un nom de client."

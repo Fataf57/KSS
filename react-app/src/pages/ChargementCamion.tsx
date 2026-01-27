@@ -31,7 +31,7 @@ interface ChargementRow {
 }
 const STORAGE_KEY = "camion_chargement_rows";
 
-const TYPES_DENREE_PREDEFINIS = ["Maïs", "Karité", "Fissan", "Soza"];
+const TYPES_DENREE_PREDEFINIS = ["Anacarde", "Karité", "Sesame", "Soza", "Mais"];
 
 const MOIS_FRANCAIS = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -426,6 +426,13 @@ export default function ChargementCamion() {
   };
 
   const validateRow = (row: ChargementRow): string | null => {
+    // Permettre l'enregistrement si la ligne est complètement vide
+    const isRowEmpty = !row.date_chargement && !row.type_denree?.trim() && 
+                       (!row.nombre_sacs || row.nombre_sacs <= 0) && 
+                       (!row.poids_par_sac || row.poids_par_sac <= 0);
+    if (isRowEmpty) return null;
+    
+    // Si au moins un champ est rempli, valider les champs requis
     if (!row.date_chargement) return "La date est requise";
     if (!row.type_denree.trim()) return "Le type de produits est requis";
     if (row.nombre_sacs <= 0) return "Le nombre de sacs doit être supérieur à 0";
@@ -1322,9 +1329,10 @@ export default function ChargementCamion() {
           )}
         </div>
       </div>
+      {/* Bouton flottant pour ajouter une ligne */}
       <Button
         onClick={addRow}
-        className="fixed bottom-2 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+        className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
         size="icon"
       >
         <Plus size={24} />

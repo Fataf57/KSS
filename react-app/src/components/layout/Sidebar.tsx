@@ -1,4 +1,4 @@
-import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, DollarSign, ShoppingCart, Receipt, LogOut } from "lucide-react";
+import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, DollarSign, ShoppingCart, Receipt, LogOut, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Entrées Stock", url: "/entrees-stock", icon: Warehouse },
-  { title: "Chargement", url: "/chargement-camion", icon: Loader },
-  { title: "Suivi Clients", url: "/liste-clients", icon: UserCheck },
+  { title: "Acceuil", url: "/", icon: LayoutDashboard },
+  // Magasin : on pointe d'abord sur les détails du stock
+  { title: "Magasin", url: "/detail-stock", icon: Warehouse },
+  { title: "Camion", url: "/chargement-camion", icon: Loader },
+  { title: "Tableau client", url: "/liste-clients", icon: UserCheck },
   { title: "Suivi Achat", url: "/liste-achats", icon: ShoppingCart },
-  { title: "Suivi Employés", url: "/liste-employes", icon: Briefcase },
+  { title: "Tableau employe", url: "/liste-employes", icon: Briefcase },
   { title: "Achats", url: "/achats", icon: ShoppingCart },
   { title: "Avances", url: "/avances", icon: DollarSign },
   { title: "Dépenses", url: "/depenses", icon: Receipt },
+  { title: "Reload", url: "/reload", icon: RefreshCw },
 ];
 
 export function Sidebar() {
@@ -67,8 +69,10 @@ export function Sidebar() {
                   )}
                   activeClassName="bg-sidebar-accent text-sidebar-foreground font-medium"
                 >
-                  <item.icon size={18} />
-                  <span className="text-sm hidden md:inline">{item.title}</span>
+                  <item.icon size={20} />
+                  <span className="text-base font-semibold hidden md:inline">
+                    {item.title}
+                  </span>
                 </NavLink>
               </li>
             ))}

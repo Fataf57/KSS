@@ -358,6 +358,13 @@ export default function Depenses() {
     // Ne pas valider les lignes de fin de période
     if (row.isPeriodStop) return null;
     
+    // Permettre l'enregistrement si la ligne est complètement vide
+    const isRowEmpty = !row.date && !row.nom_depense?.trim() && 
+                       (row.somme === null || row.somme === undefined || row.somme <= 0) &&
+                       !row.nom_personne?.trim();
+    if (isRowEmpty) return null;
+    
+    // Si au moins un champ est rempli, valider les champs requis
     if (!row.date) return "La date est requise";
     if (!row.nom_depense || !row.nom_depense.trim()) return "Le nom de la dépense est requis";
     if (row.somme === null || row.somme === undefined || row.somme <= 0) return "La somme doit être positive";

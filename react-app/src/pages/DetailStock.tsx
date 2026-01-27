@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable } from "@/components/ui/DataTable";
-import { Package, ArrowLeft, Loader2, History } from "lucide-react";
+import { Package, ArrowLeft, Loader2, History, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -265,17 +265,17 @@ export default function DetailStock() {
                   <th className="border-r border-gray-400 dark:border-gray-600 px-2 py-3 text-left font-semibold text-xl text-card-foreground min-w-[200px] bg-muted">
                     Nom Produit
                   </th>
-                  <th className="border-r border-gray-400 dark:border-gray-600 px-2 py-3 text-right font-semibold text-xl text-card-foreground min-w-[90px] bg-muted">
-                    Sacs 80kg
-                  </th>
-                  <th className="border-r border-gray-400 dark:border-gray-600 px-2 py-3 text-right font-semibold text-xl text-card-foreground min-w-[90px] bg-muted">
-                    Sacs 100kg
+                  <th className="border-r border-gray-400 dark:border-gray-600 px-2 py-3 text-right font-semibold text-xl text-card-foreground min-w-[140px] bg-muted">
+                    Total tonnage
                   </th>
                   <th className="border-r border-gray-400 dark:border-gray-600 px-2 py-3 text-right font-semibold text-xl text-card-foreground min-w-[110px] bg-muted">
                     Total sacs
                   </th>
-                  <th className="px-2 py-3 text-right font-semibold text-xl text-card-foreground min-w-[140px] bg-muted">
-                    Total tonnage
+                  <th className="border-r border-gray-400 dark:border-gray-600 px-2 py-3 text-right font-semibold text-xl text-card-foreground min-w-[90px] bg-muted">
+                    Sacs 80kg
+                  </th>
+                  <th className="px-2 py-3 text-right font-semibold text-xl text-card-foreground min-w-[90px] bg-muted">
+                    Sacs 100kg
                   </th>
                 </tr>
               </thead>
@@ -290,24 +290,25 @@ export default function DetailStock() {
                         {detail.type_denree}
                       </span>
                     </td>
+                    <td className="border-r border-gray-400 dark:border-gray-600 px-2 py-2 text-right bg-muted/20">
+                      <span className="font-extrabold text-2xl text-card-foreground">
+                        {detail.total_tonnage.toLocaleString()}{" "}
+                        <span className="text-lg font-semibold">kg</span>
+                      </span>
+                    </td>
+                    <td className="border-r border-gray-400 dark:border-gray-600 px-2 py-2 text-right bg-muted/10">
+                      <span className="font-extrabold text-2xl text-card-foreground">
+                        {detail.total_sacs.toLocaleString()}
+                      </span>
+                    </td>
                     <td className="border-r border-gray-400 dark:border-gray-600 px-2 py-2 text-right">
                       <span className="font-medium text-xl text-card-foreground">
                         {detail.sacs_80kg > 0 ? detail.sacs_80kg.toLocaleString() : "-"}
                       </span>
                     </td>
-                    <td className="border-r border-gray-400 dark:border-gray-600 px-2 py-2 text-right">
+                    <td className="px-2 py-2 text-right">
                       <span className="font-medium text-xl text-card-foreground">
                         {detail.sacs_100kg > 0 ? detail.sacs_100kg.toLocaleString() : "-"}
-                      </span>
-                    </td>
-                    <td className="border-r border-gray-400 dark:border-gray-600 px-2 py-2 text-right">
-                      <span className="font-medium text-xl text-card-foreground">
-                        {detail.total_sacs.toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 text-right bg-muted/20">
-                      <span className="font-extrabold text-2xl text-card-foreground">
-                        {detail.total_tonnage.toLocaleString()} <span className="text-lg font-semibold">kg</span>
                       </span>
                     </td>
                   </tr>
@@ -422,6 +423,14 @@ export default function DetailStock() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Bouton flottant pour aller au tableau d'ajout (entrées/sorties de stock) */}
+      <Button
+        onClick={() => navigate("/entrees-stock")}
+        className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+        size="icon"
+      >
+        <Plus size={24} />
+      </Button>
     </DashboardLayout>
   );
 }

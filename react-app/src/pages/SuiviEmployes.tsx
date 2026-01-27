@@ -361,6 +361,14 @@ export default function SuiviEmployes() {
   };
 
   const validateRow = (row: EmployeeExpenseRow): string | null => {
+    // Permettre l'enregistrement si la ligne est complètement vide
+    const isRowEmpty = !row.date && !row.employee && 
+                       (row.somme_remise === null || row.somme_remise === undefined || row.somme_remise === 0) &&
+                       !row.nom_depense?.trim() && 
+                       (row.somme_depense === null || row.somme_depense === undefined || row.somme_depense === 0);
+    if (isRowEmpty) return null;
+    
+    // Si au moins un champ est rempli, valider les champs requis
     if (!row.date) return "La date est requise";
     return null;
   };
@@ -590,7 +598,7 @@ export default function SuiviEmployes() {
       <div className="flex flex-col h-full">
         <div className="flex-shrink-0 mb-4">
           <PageHeader
-            title={currentEmployee ? `Tableau de ${currentEmployee.full_name}` : "Suivi des Employés"}
+            title={currentEmployee ? `Tableau de ${currentEmployee.full_name}` : "Tableau employe"}
             description={currentEmployee ? "Remises et dépenses de cet employé" : "Sélectionnez un employé"}
             icon={Users}
             action={
@@ -809,6 +817,17 @@ export default function SuiviEmployes() {
           )}
         </div>
       </div>
+      
+      {/* Bouton flottant pour ajouter une ligne */}
+      {currentEmployee && (
+        <Button
+          onClick={addRow}
+          className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+          size="icon"
+        >
+          <Plus size={24} />
+        </Button>
+      )}
     </DashboardLayout>
   );
 }

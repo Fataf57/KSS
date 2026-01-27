@@ -20,6 +20,7 @@ import Avances from "./pages/Avances";
 import Achats from "./pages/Achats";
 import Depenses from "./pages/Depenses";
 import NotFound from "./pages/NotFound";
+import Reload from "./pages/Reload";
 
 const queryClient = new QueryClient();
 
@@ -157,6 +158,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Depenses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reload"
+              element={
+                <ProtectedRoute>
+                  <Reload />
                 </ProtectedRoute>
               }
             />

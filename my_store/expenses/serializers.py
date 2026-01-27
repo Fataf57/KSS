@@ -60,9 +60,11 @@ class DepenseSerializer(serializers.ModelSerializer):
             }
 
     def validate_somme(self, value):
-        """Valider que la somme est positive"""
-        if value <= 0:
-            raise serializers.ValidationError("La somme doit être positive.")
+        """Valider que la somme est positive (ou nulle/vide pour permettre les lignes vides)"""
+        if value is None or value == 0:
+            return value  # Permettre les valeurs nulles ou zéro pour les lignes vides
+        if value < 0:
+            raise serializers.ValidationError("La somme ne peut pas être négative.")
         return value
 
 
@@ -78,9 +80,11 @@ class DepenseCreateSerializer(serializers.ModelSerializer):
         }
 
     def validate_somme(self, value):
-        """Valider que la somme est positive"""
-        if value <= 0:
-            raise serializers.ValidationError("La somme doit être positive.")
+        """Valider que la somme est positive (ou nulle/vide pour permettre les lignes vides)"""
+        if value is None or value == 0:
+            return value  # Permettre les valeurs nulles ou zéro pour les lignes vides
+        if value < 0:
+            raise serializers.ValidationError("La somme ne peut pas être négative.")
         return value
 
     def create(self, validated_data):

@@ -411,6 +411,13 @@ export default function SuiviAchats() {
   };
 
   const validateRow = (row: EntreeAchatRow): string | null => {
+    // Permettre l'enregistrement si la ligne est complètement vide
+    const isRowEmpty = !row.date && !row.nom_client?.trim() && !row.nom_produit?.trim() &&
+                       (!row.gros || row.gros === 0) && (!row.unit || row.unit === 0) &&
+                       (!row.quantite_kg || row.quantite_kg === 0);
+    if (isRowEmpty) return null;
+    
+    // Si au moins un champ est rempli, valider les champs requis
     if (!row.date) return "La date est requise";
     return null;
   };
@@ -720,10 +727,6 @@ export default function SuiviAchats() {
                 </Button>
                 {currentClient && (
                   <>
-                    <Button onClick={addRow} variant="outline" className="gap-2">
-                      <Plus size={16} />
-                      Nouvelle ligne
-                    </Button>
                     <Button 
                       variant="secondary" 
                       onClick={handleSave} 
@@ -965,6 +968,17 @@ export default function SuiviAchats() {
           )}
         </div>
       </div>
+      
+      {/* Bouton flottant pour ajouter une ligne */}
+      {currentClient && (
+        <Button
+          onClick={addRow}
+          className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+          size="icon"
+        >
+          <Plus size={24} />
+        </Button>
+      )}
     </DashboardLayout>
   );
 }

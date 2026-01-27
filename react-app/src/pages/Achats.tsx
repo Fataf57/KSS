@@ -223,43 +223,50 @@ export default function Achats() {
   };
 
   const handleAddEntree = async () => {
-    // Validation
-    if (!newEntree.nom_client.trim() && !newEntree.client) {
-      toast({
-        title: "Erreur",
-        description: "Le nom du client est requis",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!newEntree.achats || newEntree.achats.length === 0) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez ajouter au moins un produit",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Valider chaque ligne
-    for (let i = 0; i < newEntree.achats.length; i++) {
-      const ligne = newEntree.achats[i];
-      if (!ligne.nom_produit.trim()) {
+    // Validation - permettre l'enregistrement même si tout est vide
+    const isEntreeEmpty = (!newEntree.nom_client?.trim() && !newEntree.client) &&
+                          (!newEntree.achats || newEntree.achats.length === 0);
+    if (isEntreeEmpty) {
+      // Permettre l'enregistrement d'une entrée vide
+    } else {
+      // Si au moins un champ est rempli, valider les champs requis
+      if (!newEntree.nom_client.trim() && !newEntree.client) {
         toast({
           title: "Erreur",
-          description: `La ligne ${i + 1} : Le nom du produit est requis`,
+          description: "Le nom du client est requis",
           variant: "destructive",
         });
         return;
       }
-      if (ligne.quantite_kg <= 0) {
-        toast({
-          title: "Erreur",
-          description: `La ligne ${i + 1} : La quantité doit être positive`,
-          variant: "destructive",
-        });
-        return;
+
+      // Valider chaque ligne - permettre les lignes vides
+      for (let i = 0; i < newEntree.achats.length; i++) {
+        const ligne = newEntree.achats[i];
+        // Permettre l'enregistrement si la ligne est complètement vide
+        const isLigneEmpty = !ligne.nom_produit?.trim() && 
+                            (!ligne.quantite_kg || ligne.quantite_kg <= 0) &&
+                            (!ligne.gros || ligne.gros === 0) && (!ligne.unit || ligne.unit === 0);
+        if (isLigneEmpty) {
+          continue; // Passer à la ligne suivante si cette ligne est vide
+        }
+        
+        // Si au moins un champ est rempli, valider les champs requis
+        if (!ligne.nom_produit.trim()) {
+          toast({
+            title: "Erreur",
+            description: `La ligne ${i + 1} : Le nom du produit est requis`,
+            variant: "destructive",
+          });
+          return;
+        }
+        if (ligne.quantite_kg <= 0) {
+          toast({
+            title: "Erreur",
+            description: `La ligne ${i + 1} : La quantité doit être positive`,
+            variant: "destructive",
+          });
+          return;
+        }
       }
     }
 

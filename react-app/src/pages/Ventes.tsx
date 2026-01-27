@@ -66,10 +66,6 @@ export default function Ventes() {
         icon={ShoppingCart}
         action={
           <div className="flex gap-2">
-            <Button onClick={addRow} className="gap-2">
-              <Plus size={16} />
-              Nouvelle ligne
-            </Button>
             <Button variant="secondary" className="gap-2">
               <Save size={16} />
               Enregistrer
@@ -175,6 +171,15 @@ export default function Ventes() {
       <p className="text-sm text-muted-foreground mt-4">
         💡 Cliquez sur une cellule pour modifier. Le total est calculé automatiquement.
       </p>
+      
+      {/* Bouton flottant pour ajouter une ligne */}
+      <Button
+        onClick={addRow}
+        className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+        size="icon"
+      >
+        <Plus size={24} />
+      </Button>
     </DashboardLayout>
   );
 }

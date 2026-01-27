@@ -635,6 +635,13 @@ export default function SuiviClients() {
   };
 
   const validateRow = (row: ClientChargementRow): string | null => {
+    // Permettre l'enregistrement si la ligne est complètement vide
+    const isRowEmpty = !row.date_chargement && !row.client && !row.nom_produit?.trim() && 
+                       !row.nombre_sacs && !row.poids && !row.tonnage && 
+                       !row.prix && !row.somme_totale && !row.avance;
+    if (isRowEmpty) return null;
+    
+    // Si au moins un champ est rempli, valider les champs requis
     if (!row.date_chargement) return "La date est requise";
     if (!row.client) return "Le client est requis";
     // Les autres champs sont optionnels - on peut enregistrer seulement une avance
@@ -941,7 +948,7 @@ export default function SuiviClients() {
       <div className="flex flex-col h-[calc(100vh-140px)]">
         <div className="flex-shrink-0 mb-4">
           <PageHeader
-            title={currentClient ? `Suivi - ${currentClient.full_name}` : "Suivi des Clients"}
+            title={currentClient ? `Suivi - ${currentClient.full_name}` : "Tableau client"}
             description={currentClient ? "Chargements et dettes de ce client" : "Sélectionnez un client"}
             icon={Users}
             action={
@@ -957,10 +964,6 @@ export default function SuiviClients() {
                 </Button>
                 {currentClient && (
                   <>
-                    <Button onClick={addRow} variant="outline" className="gap-2">
-                      <Plus size={16} />
-                      Nouvelle ligne
-                    </Button>
                     <Button 
                       onClick={addFinDeCompteRow} 
                       variant="outline" 
@@ -1206,6 +1209,17 @@ export default function SuiviClients() {
           )}
         </div>
       </div>
+      
+      {/* Bouton flottant pour ajouter une ligne */}
+      {currentClient && (
+        <Button
+          onClick={addRow}
+          className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
+          size="icon"
+        >
+          <Plus size={24} />
+        </Button>
+      )}
     </DashboardLayout>
   );
 }
