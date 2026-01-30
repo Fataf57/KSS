@@ -12,11 +12,8 @@ import DetailStock from "./pages/DetailStock";
 import ChargementCamion from "./pages/ChargementCamion";
 import SuiviClients from "./pages/SuiviClients";
 import ListeClients from "./pages/ListeClients";
-import SuiviAchats from "./pages/SuiviAchats";
-import ListeAchats from "./pages/ListeAchats";
 import SuiviEmployes from "./pages/SuiviEmployes";
 import ListeEmployes from "./pages/ListeEmployes";
-import Avances from "./pages/Avances";
 import Achats from "./pages/Achats";
 import Depenses from "./pages/Depenses";
 import NotFound from "./pages/NotFound";
@@ -90,30 +87,6 @@ const App = () => (
               }
             />
             <Route
-              path="/liste-achats"
-              element={
-                <ProtectedRoute>
-                  <ListeAchats />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/suivi-achats/:clientId"
-              element={
-                <ProtectedRoute>
-                  <SuiviAchats />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/suivi-achats"
-              element={
-                <ProtectedRoute>
-                  <SuiviAchats />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/liste-employes"
               element={
                 <ProtectedRoute>
@@ -134,14 +107,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SuiviEmployes />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/avances"
-              element={
-                <ProtectedRoute>
-                  <Avances />
                 </ProtectedRoute>
               }
             />

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, DollarSign, ShoppingCart, Receipt, LogOut, RefreshCw } from "lucide-react";
+import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, ShoppingCart, Receipt, LogOut, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,10 +11,8 @@ const navItems = [
   { title: "Magasin", url: "/detail-stock", icon: Warehouse },
   { title: "Camion", url: "/chargement-camion", icon: Loader },
   { title: "Tableau client", url: "/liste-clients", icon: UserCheck },
-  { title: "Suivi Achat", url: "/liste-achats", icon: ShoppingCart },
   { title: "Tableau employe", url: "/liste-employes", icon: Briefcase },
   { title: "Achats", url: "/achats", icon: ShoppingCart },
-  { title: "Avances", url: "/avances", icon: DollarSign },
   { title: "Dépenses", url: "/depenses", icon: Receipt },
   { title: "Reload", url: "/reload", icon: RefreshCw },
 ];
@@ -64,13 +62,13 @@ export function Sidebar() {
                   to={item.url}
                   end={item.url === "/"}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sidebar-muted transition-all duration-200 whitespace-nowrap",
+                    "flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-muted transition-all duration-200 whitespace-nowrap",
                     "hover:bg-sidebar-accent hover:text-sidebar-foreground"
                   )}
                   activeClassName="bg-sidebar-accent text-sidebar-foreground font-medium"
                 >
-                  <item.icon size={20} />
-                  <span className="text-base font-semibold hidden md:inline">
+                  <item.icon size={22} />
+                  <span className="text-lg font-semibold hidden md:inline">
                     {item.title}
                   </span>
                 </NavLink>

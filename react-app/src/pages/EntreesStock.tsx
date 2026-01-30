@@ -223,7 +223,7 @@ export default function EntreesStock() {
       nombre_sacs: 0,
       poids_par_sac: 0,
       tonnage_total: 0,
-      numero_magasin: "1",
+      numero_magasin: "2",
       isSaved: false,
     };
     setRows([...rows, newRow]);
@@ -299,7 +299,7 @@ export default function EntreesStock() {
     if (!row.date) return "La date est requise";
     if (!row.type_operation) return "Le type d'opération est requis";
     if (row.type_operation === 'entree' && !row.nom_fournisseur.trim()) {
-      return "Le nom du fournisseur est requis pour une entrée";
+      return "Le nom du client est requis pour une entrée";
     }
     if (!row.type_denree.trim()) return "Le type de denrée est requis";
     if (row.nombre_sacs <= 0) return "Le nombre de sacs doit être supérieur à 0";
@@ -419,7 +419,7 @@ export default function EntreesStock() {
         nombre_sacs: 0,
         poids_par_sac: 0,
         tonnage_total: 0,
-        numero_magasin: "1",
+        numero_magasin: "2",
         isSaved: false,
       };
       setRows(prevRows => [...prevRows, newRow]);
@@ -491,7 +491,7 @@ export default function EntreesStock() {
               className="gap-2"
             >
               <Eye size={16} />
-              Voir les détails
+              Voir les Magasin
             </Button>
                 <Button 
                   variant="secondary" 
@@ -531,7 +531,7 @@ export default function EntreesStock() {
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-xl text-card-foreground w-[80px] bg-muted">N°</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground w-[180px] bg-muted">Date</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Type</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[250px] bg-muted">Fournisseur/Client</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[250px] bg-muted">Client</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[200px] bg-muted">Nom Produit</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[100px] bg-muted">Nbr sac</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[120px] bg-muted">Poid sac</th>
@@ -550,10 +550,10 @@ export default function EntreesStock() {
                     className={`border-t border-gray-400 dark:border-gray-600 transition-colors ${
                       row.isSaved 
                         ? row.type_operation === 'sortie' 
-                          ? "bg-red-50/30 dark:bg-red-950/20 hover:bg-red-50/40 dark:hover:bg-red-950/30"
+                          ? "bg-red-200 dark:bg-red-900/40 hover:bg-red-300 dark:hover:bg-red-900/50"
                           : "bg-muted/10 hover:bg-muted/20"
                         : row.type_operation === 'sortie'
-                          ? "bg-red-50/20 dark:bg-red-950/10 hover:bg-red-50/30 dark:hover:bg-red-950/20"
+                          ? "bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/40"
                           : "hover:bg-muted/20"
                     }`}
                   >

@@ -529,11 +529,10 @@ export default function ChargementCamion() {
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 14;
       
-      // À gauche : ETABLISSEMENT KADER SAWADOGO ET FRERE avec téléphones
-      // Tous les éléments sur la même ligne horizontale
-      const startY = margin; // Position de départ
+      // En-tête avec logo et informations de l'entreprise
+      const startY = margin;
       
-      // Logo au centre - même niveau que les textes
+      // Logo au centre
       const logoHeight = 25;
       const logoWidth = 35;
       const logoX = (pageWidth - logoWidth) / 2;
@@ -552,42 +551,48 @@ export default function ChargementCamion() {
       // Ligne 1 gauche : Première partie du nom de l'entreprise
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0); // Noir pur
       const leftText1a = "ETABLISSEMENT KADER SAWADOGO";
       doc.text(leftText1a, margin, startY + 5);
       
-      // Ligne 1 droite : Première partie de BURKINA FASO
+      // Ligne 1 droite : BURKINA FASSO
       doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0); // Noir pur
-      const rightText1a = "BURKINA FASO, LA PATRIE";
+      const rightText1a = "BURKINA FASSO";
       const rightText1aWidth = doc.getTextWidth(rightText1a);
       doc.text(rightText1a, pageWidth - margin - rightText1aWidth, startY + 5);
       
       // Ligne 2 gauche : Deuxième partie du nom de l'entreprise
       doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0); // Noir pur
       const leftText1b = "ET FRERE";
       doc.text(leftText1b, margin, startY + 11);
       
-      // Ligne 2 droite : Deuxième partie de BURKINA FASO
+      // Ligne 2 droite : LA PATRIE OU LA MORT
       doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0); // Noir pur
-      const rightText1b = "OU LA MORT NOUS VAINCRONS";
+      const rightText1b = "LA PATRIE OU LA MORT";
       const rightText1bWidth = doc.getTextWidth(rightText1b);
       doc.text(rightText1b, pageWidth - margin - rightText1bWidth, startY + 11);
       
-      // Ligne 3 gauche : Les deux téléphones sur la même ligne
+      // Ligne 3 droite : NOUS VAINCRONS
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      const rightText1c = "NOUS VAINCRONS";
+      const rightText1cWidth = doc.getTextWidth(rightText1c);
+      doc.text(rightText1c, pageWidth - margin - rightText1cWidth, startY + 17);
+      
+      // Ligne 4 gauche : Tel BF (espacé du nom de l'entreprise)
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.setTextColor(0, 0, 0); // Noir pur
-      const telText = "TEL: 75585776  TEL: 78926341";
-      doc.text(telText, margin, startY + 17);
+      const telTextBF = "Tel BF    : +226 75 58 57 76 | 76 54 71 71";
+      doc.text(telTextBF, margin, startY + 15);
+      
+      // Ligne 5 gauche : Tel Mali (collé au Tel BF)
+      const telTextMali = "Tel Mali : +223 73 73 73 44 | 74 52 11 47";
+      doc.text(telTextMali, margin, startY + 21);
       
       // Ligne de séparation
-      const separatorY = startY + 23; // Après toutes les informations de contact
+      const separatorY = startY + 27;
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.5);
       doc.line(margin, separatorY, pageWidth - margin, separatorY);
@@ -682,21 +687,17 @@ export default function ChargementCamion() {
         margin: { left: margin, right: margin },
         tableWidth: 'auto',
         didDrawPage: () => {
-          // Ajouter le pied de page après chaque page
+          // Pied de page - s'assurer qu'il est toujours visible
           const footerY = pageHeight - 20;
-          
-          // À gauche : Bobo Dioulasso le [date]
-          doc.setFontSize(9);
+          doc.setFontSize(11); // Augmentation de la taille de police de la date
           doc.setFont("helvetica", "normal");
-          doc.setTextColor(0, 0, 0); // Noir pur
           const today = new Date().toLocaleDateString('fr-FR');
           const leftFooter = `Bobo Dioulasso le ${today}`;
           doc.text(leftFooter, margin, footerY);
           
-          // À droite : SIGNATURE PDG KADER
           doc.setFont("helvetica", "bold");
-          doc.setTextColor(0, 0, 0); // Noir pur
-          const rightFooter = "SIGNATURE PDG KADER";
+          doc.setFontSize(13); // Augmentation de la taille de police
+          const rightFooter = "SIGNATURE DU PDG DE KSS";
           const rightFooterWidth = doc.getTextWidth(rightFooter);
           doc.text(rightFooter, pageWidth - margin - rightFooterWidth, footerY);
         },

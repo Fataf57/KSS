@@ -221,7 +221,6 @@ export default function ListeClients() {
     <DashboardLayout>
       <PageHeader
         title="Liste des Clients"
-        description="Sélectionnez un client pour voir son suivi de chargements"
         icon={Users}
       />
 

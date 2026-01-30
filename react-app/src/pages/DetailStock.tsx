@@ -49,7 +49,7 @@ interface TransactionsResponse {
 export default function DetailStock() {
   const [details, setDetails] = useState<StockDetail[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedMagasin, setSelectedMagasin] = useState<string>("all");
+  const [selectedMagasin, setSelectedMagasin] = useState<string>("2");
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [magasinNom, setMagasinNom] = useState<string>("");
@@ -60,7 +60,7 @@ export default function DetailStock() {
   const fetchDetails = async (magasin?: string) => {
     setIsLoading(true);
     try {
-      const url = magasin && magasin !== "all" 
+      const url = magasin
         ? getApiUrl(`stock-entries/details/?magasin=${magasin}`)
         : getApiUrl("stock-entries/details/");
       
@@ -150,7 +150,7 @@ export default function DetailStock() {
   };
 
   const handleOpenHistory = () => {
-    if (selectedMagasin && selectedMagasin !== "all") {
+    if (selectedMagasin) {
       setIsHistoryOpen(true);
       fetchTransactions(selectedMagasin);
     }
@@ -165,22 +165,33 @@ export default function DetailStock() {
     });
   };
 
+  const formatNumber = (value: number) => {
+    // Supprimer les décimales inutiles (.00)
+    if (value % 1 === 0) {
+      return value.toLocaleString('fr-FR', { maximumFractionDigits: 0 });
+    }
+    return value.toLocaleString('fr-FR', { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+  };
+
   return (
     <DashboardLayout>
       <PageHeader
-        title="Détails du Stock"
-        icon={Package}
-        action={
-          <div className="flex gap-4 items-center">
-            <div className="flex gap-3 border border-border rounded-full px-4 py-2 bg-muted/40 shadow-sm">
-              <Button
-                variant={selectedMagasin === "all" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handleMagasinChange("all")}
-                className="h-10 px-5 text-base font-semibold"
-              >
-                Tout
-              </Button>
+        title={
+          <div className="flex items-center gap-5">
+            <span>Détails du Stock</span>
+            <Button 
+              variant="secondary" 
+              onClick={() => {
+                // Déclencher un rafraîchissement avant de revenir
+                window.dispatchEvent(new Event('stock-updated'));
+                navigate("/entrees-stock");
+              }}
+              className="gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour
+            </Button>
+            <div className="flex gap-3 border border-border rounded-full px-4 py-2 bg-muted/40 shadow-sm ml-10">
               <Button
                 variant={selectedMagasin === "2" ? "default" : "ghost"}
                 size="sm"
@@ -206,35 +217,22 @@ export default function DetailStock() {
                 Mali
               </Button>
             </div>
-            <Button 
-              variant="secondary" 
-              onClick={() => {
-                // Déclencher un rafraîchissement avant de revenir
-                window.dispatchEvent(new Event('stock-updated'));
-                navigate("/entrees-stock");
-              }}
-              className="gap-2"
-            >
-              <ArrowLeft size={16} />
-              Retour
-            </Button>
           </div>
         }
+        icon={Package}
+        action={
+          selectedMagasin && (
+            <Button
+              variant="outline"
+              onClick={handleOpenHistory}
+              className="gap-2"
+            >
+              <History size={16} />
+              Historique
+            </Button>
+          )
+        }
       />
-
-      {/* Bouton Historique - visible seulement quand un magasin est sélectionné */}
-      {selectedMagasin && selectedMagasin !== "all" && (
-        <div className="mb-4 flex justify-end">
-          <Button
-            variant="outline"
-            onClick={handleOpenHistory}
-            className="gap-2"
-          >
-            <History size={16} />
-            Historique des transactions - {getMagasinName(selectedMagasin)}
-          </Button>
-        </div>
-      )}
 
       {/* Tableau des détails */}
       <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
@@ -245,17 +243,9 @@ export default function DetailStock() {
           </div>
         ) : details.length === 0 ? (
           <div className="p-12 text-center">
-            <Package className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-card-foreground mb-2">
-              Aucune donnée de stock
+            <p className="text-lg font-medium text-card-foreground">
+              Magasin vide
             </p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Enregistrez des entrées de stock pour voir les détails ici
-            </p>
-            <Button onClick={() => navigate("/entrees-stock")} className="gap-2">
-              <ArrowLeft size={16} />
-              Aller à l'enregistrement
-            </Button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -321,9 +311,9 @@ export default function DetailStock() {
 
       {/* Modal Historique des transactions */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Historique des transactions - {magasinNom}</DialogTitle>
+            <DialogTitle className="text-2xl">Historique - {magasinNom}</DialogTitle>
             <DialogDescription>
               Liste complète des entrées et sorties pour ce magasin
             </DialogDescription>
@@ -332,15 +322,15 @@ export default function DetailStock() {
           {isLoadingTransactions ? (
             <div className="flex items-center justify-center p-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <span className="ml-3 text-muted-foreground">Chargement des transactions...</span>
+              <span className="ml-3 text-lg text-muted-foreground">Chargement des transactions...</span>
             </div>
           ) : transactions.length === 0 ? (
             <div className="p-12 text-center">
               <History className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium text-card-foreground mb-2">
+              <p className="text-xl font-medium text-card-foreground mb-2">
                 Aucune transaction
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 Aucune transaction enregistrée pour ce magasin
               </p>
             </div>
@@ -349,29 +339,26 @@ export default function DetailStock() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-muted sticky top-0 z-10">
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-left font-semibold">
+                    <th className="border border-gray-400 dark:border-gray-600 px-4 py-3 text-left font-semibold text-lg">
                       Date
                     </th>
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-left font-semibold">
+                    <th className="border border-gray-400 dark:border-gray-600 px-4 py-3 text-left font-semibold text-lg">
                       Type
                     </th>
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-left font-semibold">
+                    <th className="border border-gray-400 dark:border-gray-600 px-4 py-3 text-left font-semibold text-lg">
                       Type de denrée
                     </th>
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-left font-semibold">
-                      Fournisseur/Client
+                    <th className="border border-gray-400 dark:border-gray-600 px-4 py-3 text-left font-semibold text-lg">
+                      Client
                     </th>
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-right font-semibold">
+                    <th className="border border-gray-400 dark:border-gray-600 px-4 py-3 text-right font-semibold text-lg">
                       Sacs
                     </th>
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-right font-semibold">
-                      Poids/sac (kg)
+                    <th className="border border-gray-400 dark:border-gray-600 px-4 py-3 text-right font-semibold text-lg">
+                      Poids/sac
                     </th>
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-right font-semibold">
-                      Tonnage (kg)
-                    </th>
-                    <th className="border border-gray-400 dark:border-gray-600 px-3 py-2 text-left font-semibold">
-                      Notes
+                    <th className="border border-gray-400 dark:border-gray-600 px-4 py-3 text-right font-semibold text-lg">
+                      Tonnage
                     </th>
                   </tr>
                 </thead>
@@ -385,11 +372,11 @@ export default function DetailStock() {
                           : 'bg-red-50/50 dark:bg-red-950/20'
                       }`}
                     >
-                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-2">
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-4 py-3 text-base">
                         {formatDate(transaction.date)}
                       </td>
-                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-2">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-4 py-3">
+                        <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold ${
                           transaction.type_operation === 'entree'
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                             : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
@@ -397,23 +384,20 @@ export default function DetailStock() {
                           {transaction.type_operation_display}
                         </span>
                       </td>
-                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-2">
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-4 py-3 text-base">
                         {transaction.type_denree}
                       </td>
-                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-2">
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-4 py-3 text-base">
                         {transaction.nom_fournisseur || "-"}
                       </td>
-                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-2 text-right">
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-4 py-3 text-right text-base">
                         {transaction.nombre_sacs.toLocaleString()}
                       </td>
-                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-2 text-right">
-                        {transaction.poids_par_sac.toLocaleString()}
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-4 py-3 text-right text-base">
+                        {formatNumber(transaction.poids_par_sac)} kg
                       </td>
-                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-2 text-right font-semibold">
-                        {transaction.tonnage_total.toLocaleString()}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-muted-foreground">
-                        {transaction.notes || "-"}
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-4 py-3 text-right font-semibold text-base">
+                        {formatNumber(transaction.tonnage_total)} kg
                       </td>
                     </tr>
                   ))}

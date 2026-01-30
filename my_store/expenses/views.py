@@ -113,10 +113,10 @@ class DepenseViewSet(viewsets.ModelViewSet):
             header_data = [
                 [
                     Paragraph("ETABLISSEMENT KADER SAWADOGO<br/>ET FRERE", header_style),
-                    Paragraph("BURKINA FASO, LA PATRIE<br/>OU LA MORT NOUS VAINCRONS", header_right_style)
+                    Paragraph("BURKINA FASSO<br/>LA PATRIE OU LA MORT<br/>NOUS VAINCRONS", header_right_style)
                 ],
                 [
-                    Paragraph("TEL: 75585776  TEL: 78926341", styles['Normal']),
+                    Paragraph("Tel BF    : +226 75 58 57 76 | 76 54 71 71<br/>Tel Mali : +223 73 73 73 44 | 74 52 11 47", styles['Normal']),
                     ""
                 ]
             ]

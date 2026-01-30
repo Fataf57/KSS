@@ -64,7 +64,16 @@ export default function Achats() {
     avance: 0,
     restant: 0,
     paye: 0,
-    achats: [],
+    achats: [
+      {
+        nom_produit: "",
+        gros: 0,
+        unit: 0,
+        quantite_kg: 0,
+        prix_unitaire: 0,
+        montant: 0,
+      },
+    ],
   });
   const { toast } = useToast();
 
@@ -132,7 +141,16 @@ export default function Achats() {
       avance: 0,
       restant: 0,
       paye: 0,
-      achats: [],
+      achats: [
+        {
+          nom_produit: "",
+          gros: 0,
+          unit: 0,
+          quantite_kg: 0,
+          prix_unitaire: 0,
+          montant: 0,
+        },
+      ],
     });
     setIsDialogOpen(true);
   };
@@ -397,7 +415,7 @@ export default function Achats() {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 14;
+      const margin = 10; // Marges réduites pour plus d'espace
       
       // En-tête avec logo et informations de l'entreprise
       const startY = margin;
@@ -424,10 +442,10 @@ export default function Achats() {
       const leftText1a = "ETABLISSEMENT KADER SAWADOGO";
       doc.text(leftText1a, margin, startY + 5);
       
-      // Ligne 1 droite : Première partie de BURKINA FASO
+      // Ligne 1 droite : BURKINA FASSO
       doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      const rightText1a = "BURKINA FASO, LA PATRIE";
+      const rightText1a = "BURKINA FASSO";
       const rightText1aWidth = doc.getTextWidth(rightText1a);
       doc.text(rightText1a, pageWidth - margin - rightText1aWidth, startY + 5);
       
@@ -437,21 +455,32 @@ export default function Achats() {
       const leftText1b = "ET FRERE";
       doc.text(leftText1b, margin, startY + 11);
       
-      // Ligne 2 droite : Deuxième partie de BURKINA FASO
+      // Ligne 2 droite : LA PATRIE OU LA MORT
       doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      const rightText1b = "OU LA MORT NOUS VAINCRONS";
+      const rightText1b = "LA PATRIE OU LA MORT";
       const rightText1bWidth = doc.getTextWidth(rightText1b);
       doc.text(rightText1b, pageWidth - margin - rightText1bWidth, startY + 11);
       
-      // Ligne 3 gauche : Les deux téléphones sur la même ligne
+      // Ligne 3 droite : NOUS VAINCRONS
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      const rightText1c = "NOUS VAINCRONS";
+      const rightText1cWidth = doc.getTextWidth(rightText1c);
+      doc.text(rightText1c, pageWidth - margin - rightText1cWidth, startY + 17);
+      
+      // Ligne 4 gauche : Tel BF (espacé du nom de l'entreprise)
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      const telText = "TEL: 75585776  TEL: 78926341";
-      doc.text(telText, margin, startY + 17);
+      const telTextBF = "Tel BF    : +226 75 58 57 76 | 76 54 71 71";
+      doc.text(telTextBF, margin, startY + 15);
+      
+      // Ligne 5 gauche : Tel Mali (collé au Tel BF)
+      const telTextMali = "Tel Mali : +223 73 73 73 44 | 74 52 11 47";
+      doc.text(telTextMali, margin, startY + 21);
       
       // Ligne de séparation
-      const separatorY = startY + 23;
+      const separatorY = startY + 27;
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.5);
       doc.line(margin, separatorY, pageWidth - margin, separatorY);
@@ -467,20 +496,7 @@ export default function Achats() {
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       
-      // Numéro de reçu
-      doc.setFont("helvetica", "bold");
-      doc.text("N° Reçu:", margin, infoY);
-      doc.setFont("helvetica", "normal");
-      doc.text(entree.numero_entree || "-", margin + 35, infoY);
-      
-      // Date
-      doc.setFont("helvetica", "bold");
-      doc.text("Date:", margin + 100, infoY);
-      doc.setFont("helvetica", "normal");
-      doc.text(formatDateDisplay(entree.date), margin + 120, infoY);
-      
-      // Client
-      infoY += 6;
+      // Client (en premier)
       doc.setFont("helvetica", "bold");
       doc.text("Client:", margin, infoY);
       doc.setFont("helvetica", "normal");
@@ -495,6 +511,19 @@ export default function Achats() {
         displayClientName += "...";
       }
       doc.text(displayClientName, margin + 30, infoY);
+      
+      // Numéro de reçu
+      infoY += 6;
+      doc.setFont("helvetica", "bold");
+      doc.text("N° Reçu:", margin, infoY);
+      doc.setFont("helvetica", "normal");
+      doc.text(entree.numero_entree || "-", margin + 35, infoY);
+      
+      // Date
+      doc.setFont("helvetica", "bold");
+      doc.text("Date:", margin + 100, infoY);
+      doc.setFont("helvetica", "normal");
+      doc.text(formatDateDisplay(entree.date), margin + 120, infoY);
       
       // Ligne de séparation avant le tableau
       infoY += 6;
@@ -524,14 +553,14 @@ export default function Achats() {
       
       // Calculer les largeurs de colonnes proportionnelles pour un meilleur ajustement
       const tableWidth = pageWidth - (2 * margin);
-      // Largeurs ajustées : Produit (22%), Nbr sac (13%), Poids sac (13%), Tonnage (15%), Prix (17%), Montant (20%)
+      // Largeurs ajustées pour occuper plus d'espace : Produit (18%), Nbr sac (14%), Poids sac (14%), Tonnage (16%), Prix (19%), Montant (19%)
       const colWidths = [
-        tableWidth * 0.22,  // Produit (encore réduit)
-        tableWidth * 0.13,  // Nbr sac
-        tableWidth * 0.13,  // Poids sac
-        tableWidth * 0.15,  // Tonnage
-        tableWidth * 0.17,  // Prix d'achat
-        tableWidth * 0.20,  // Montant
+        tableWidth * 0.18,  // Produit (augmenté)
+        tableWidth * 0.14,  // Nbr sac
+        tableWidth * 0.14,  // Poids sac
+        tableWidth * 0.16,  // Tonnage
+        tableWidth * 0.19,  // Prix d'achat
+        tableWidth * 0.19,  // Montant
       ];
       
       // Générer le tableau avec des paramètres fixes pour garantir la cohérence
@@ -544,26 +573,32 @@ export default function Achats() {
           fillColor: [66, 139, 202], 
           textColor: 255, 
           fontStyle: "bold", 
-          fontSize: 10,
-          halign: 'center'
+          fontSize: 14,
+          halign: 'center',
+          cellPadding: 6,
+          lineWidth: 0.5,
         },
         bodyStyles: {
-          fontSize: 9,
-          cellPadding: 3,
+          fontSize: 13,
+          cellPadding: 6,
+          textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
+          lineWidth: 0.3,
         },
         styles: { 
-          fontSize: 9, 
-          cellPadding: 3,
+          fontSize: 13, 
+          cellPadding: 6,
           overflow: 'linebreak',
-          cellWidth: 'wrap'
+          cellWidth: 'wrap',
+          textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
+          lineWidth: 0.3,
         },
         columnStyles: {
-          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle' },
-          1: { cellWidth: colWidths[1], halign: 'right', valign: 'middle' },
-          2: { cellWidth: colWidths[2], halign: 'right', valign: 'middle' },
-          3: { cellWidth: colWidths[3], halign: 'right', valign: 'middle' },
-          4: { cellWidth: colWidths[4], halign: 'right', valign: 'middle' },
-          5: { cellWidth: colWidths[5], halign: 'right', valign: 'middle' },
+          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle', fontSize: 13, textColor: [0, 0, 0] },
+          1: { cellWidth: colWidths[1], halign: 'right', valign: 'middle', fontSize: 13, textColor: [0, 0, 0] },
+          2: { cellWidth: colWidths[2], halign: 'right', valign: 'middle', fontSize: 13, textColor: [0, 0, 0] },
+          3: { cellWidth: colWidths[3], halign: 'right', valign: 'middle', fontSize: 13, textColor: [0, 0, 0] },
+          4: { cellWidth: colWidths[4], halign: 'right', valign: 'middle', fontSize: 13, textColor: [0, 0, 0] },
+          5: { cellWidth: colWidths[5], halign: 'right', valign: 'middle', fontSize: 13, textColor: [0, 0, 0] },
         },
         margin: { left: margin, right: margin, top: infoY + 4 },
         tableWidth: tableWidth,
@@ -586,17 +621,19 @@ export default function Achats() {
       const nonPaye = montantNet - paye;
       
       // Créer les lignes de totaux avec labels et valeurs séparés pour un meilleur contrôle
-      // Ligne 1 : Charge, Restant, Avance, TOTAL NET, (vide), TOTAL
+      // Ligne 1 : Charge, Restant, Avance, Total, (vide), Total Net
       const totalsRow1 = [
         `Charge: ${formatNumber(charge)} F`,
-        `Restant: ${formatNumber(restant)} F`,
+        `Ancien Reste: ${formatNumber(restant)} F`,
         `Avance: ${formatNumber(avance)} F`,
-        `TOTAL NET : ${formatNumber(montantNet)} F`,
+        `Total : ${formatNumber(montantHt)} F`,
         "",
-        `TOTAL : ${formatNumber(montantHt)} F`
+        `Total Net : ${formatNumber(montantNet)} F`
       ];
       
       // Ligne 2 : (vide), (vide), (vide), (vide), Payé, Non payé
+      // Vérifier s'il y a un montant non payé pour le mettre en rouge
+      const hasNonPaye = nonPaye > 0;
       const totalsRow2 = [
         "",
         "",
@@ -612,26 +649,28 @@ export default function Achats() {
         body: [totalsRow1, totalsRow2],
         theme: "grid",
         bodyStyles: {
-          fontSize: 7,
-          cellPadding: 1.5,
+          fontSize: 11,
+          cellPadding: 4,
           fillColor: [245, 245, 245], // Fond gris clair
-          minCellHeight: 6,
+          minCellHeight: 8,
+          textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
         },
         styles: { 
-          fontSize: 7, 
-          cellPadding: 1.5,
+          fontSize: 11, 
+          cellPadding: 4,
           overflow: 'linebreak',
           cellWidth: 'wrap',
           fillColor: [245, 245, 245],
-          minCellHeight: 6,
+          minCellHeight: 8,
+          textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
         },
         columnStyles: {
-          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 7, minCellHeight: 6 },
-          1: { cellWidth: colWidths[1], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 7, minCellHeight: 6 },
-          2: { cellWidth: colWidths[2], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 7, minCellHeight: 6 },
-          3: { cellWidth: colWidths[3], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 7, minCellHeight: 6 },
-          4: { cellWidth: colWidths[4], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 7, minCellHeight: 6 },
-          5: { cellWidth: colWidths[5], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 7, minCellHeight: 6 },
+          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
+          1: { cellWidth: colWidths[1], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
+          2: { cellWidth: colWidths[2], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
+          3: { cellWidth: colWidths[3], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 12, minCellHeight: 8, textColor: [0, 0, 0] },
+          4: { cellWidth: colWidths[4], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
+          5: { cellWidth: colWidths[5], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 12, minCellHeight: 8, textColor: [0, 0, 0] },
         },
         margin: { left: margin, right: margin },
         tableWidth: tableWidth,
@@ -644,13 +683,14 @@ export default function Achats() {
           if (data.row.index === 0) {
             // Première ligne - fond gris pour toutes les cellules
             data.cell.styles.fillColor = [245, 245, 245];
-            data.cell.styles.fontSize = 7; // Taille réduite pour tenir sur une ligne
-            data.cell.styles.minCellHeight = 6;
+            data.cell.styles.fontSize = 11; // Taille augmentée pour meilleure lisibilité
+            data.cell.styles.minCellHeight = 8;
+            data.cell.styles.textColor = [0, 0, 0]; // Noir pur
             if (data.column.index === 3) {
-              // TOTAL NET
+              // Total
               data.cell.styles.fontStyle = 'bold';
             } else if (data.column.index === 5) {
-              // TOTAL
+              // Total Net
               data.cell.styles.fontStyle = 'bold';
             } else {
               data.cell.styles.fontStyle = 'normal';
@@ -658,13 +698,19 @@ export default function Achats() {
           } else if (data.row.index === 1) {
             // Deuxième ligne - fond gris pour toutes les cellules
             data.cell.styles.fillColor = [245, 245, 245];
-            data.cell.styles.fontSize = 7; // Taille réduite pour tenir sur une ligne
-            data.cell.styles.minCellHeight = 6;
+            data.cell.styles.fontSize = 11; // Taille augmentée pour meilleure lisibilité
+            data.cell.styles.minCellHeight = 8;
             if (data.column.index === 5) {
-              // Non payé
+              // Non payé - mettre en rouge si montant > 0
               data.cell.styles.fontStyle = 'bold';
+              if (hasNonPaye) {
+                data.cell.styles.textColor = [255, 0, 0]; // Rouge
+              } else {
+                data.cell.styles.textColor = [0, 0, 0]; // Noir
+              }
             } else {
               data.cell.styles.fontStyle = 'normal';
+              data.cell.styles.textColor = [0, 0, 0]; // Noir pur
             }
           }
         },
@@ -675,14 +721,15 @@ export default function Achats() {
       
       // Pied de page - s'assurer qu'il est toujours visible
       const footerY = pageHeight - 20;
-      doc.setFontSize(9);
+      doc.setFontSize(11); // Augmentation de la taille de police de la date
       doc.setFont("helvetica", "normal");
       const today = new Date().toLocaleDateString('fr-FR');
       const leftFooter = `Bobo Dioulasso le ${today}`;
       doc.text(leftFooter, margin, footerY);
       
       doc.setFont("helvetica", "bold");
-      const rightFooter = "SIGNATURE PDG KADER";
+      doc.setFontSize(13); // Augmentation de la taille de police
+      const rightFooter = "SIGNATURE DU PDG DE KSS";
       const rightFooterWidth = doc.getTextWidth(rightFooter);
       doc.text(rightFooter, pageWidth - margin - rightFooterWidth, footerY);
       
@@ -751,18 +798,23 @@ export default function Achats() {
 
   return (
     <DashboardLayout>
+      <datalist id="produits-list">
+        {produits.map((produit) => (
+          <option key={produit.id} value={produit.name}>
+            {produit.name}
+          </option>
+        ))}
+      </datalist>
       <PageHeader
         title="Achats"
-        description="Enregistrez vos achats (Entrées avec plusieurs produits)"
         icon={ShoppingCart}
       />
 
       {/* Formulaire d'entrée (affiché directement) */}
       <div className="bg-card rounded-xl border border-border p-4 mt-4 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Fiche d'approvisionnement (Entrée)</h2>
         <div className="grid gap-4">
           {/* En-tête */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 mb-2">
             <Input
               type="text"
               value={newEntree.nom_client || ""}
@@ -781,7 +833,7 @@ export default function Achats() {
           </div>
 
           {/* Tableau des produits */}
-          <div className="border border-solid border-border rounded-lg overflow-hidden mt-4">
+          <div className="border border-solid border-border rounded-lg overflow-hidden">
             <table className="w-full border-collapse">
               <thead className="sticky top-0 z-30">
                 <tr className="bg-muted">
@@ -790,7 +842,8 @@ export default function Achats() {
                   <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[90px] bg-muted">Poids sac</th>
                   <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[120px] bg-muted">Tonnage</th>
                   <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[130px] bg-muted">Prix d'achat</th>
-                  <th className="px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Montant</th>
+                  <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Montant</th>
+                  <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-xl text-card-foreground w-12 bg-muted">#</th>
                 </tr>
               </thead>
               <tbody>
@@ -800,6 +853,8 @@ export default function Achats() {
                       <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[200px]">
                         <Input
                           type="text"
+                          list="produits-list"
+                          autoComplete="off"
                           value={ligne.nom_produit || ""}
                           onChange={(e) => handleUpdateLigne(index, "nom_produit", e.target.value)}
                           placeholder="Nom du produit"
@@ -839,14 +894,26 @@ export default function Achats() {
                           disabled={isSaving}
                         />
                       </td>
-                      <td className="px-3 py-1 text-right font-medium text-xl text-foreground min-w-[150px] bg-muted/20">
+                      <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-1 text-right font-medium text-xl text-foreground min-w-[150px] bg-muted/20">
                         {formatNumber(ligne.montant || 0)} F
+                      </td>
+                      <td className="px-1 py-1 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveLigne(index)}
+                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          title="Supprimer cette ligne"
+                          disabled={isSaving}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="border-t border-gray-400 dark:border-gray-600 px-3 py-8 text-center text-muted-foreground text-xl">
+                    <td colSpan={7} className="border-t border-gray-400 dark:border-gray-600 px-3 py-8 text-center text-muted-foreground text-xl">
                       Cliquez sur "Ajouter un produit" pour commencer
                     </td>
                   </tr>
@@ -868,7 +935,7 @@ export default function Achats() {
                         <span className="text-lg font-medium"> F</span>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className="text-lg font-medium">Restant: </span>
+                        <span className="text-lg font-medium">Ancien Reste: </span>
                         <Input
                           type="number"
                           value={newEntree.restant === 0 ? "" : newEntree.restant}
@@ -894,13 +961,13 @@ export default function Achats() {
                         <span className="text-lg font-medium"> F</span>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className="font-bold uppercase text-lg text-foreground">
-                          TOTAL NET : {formatNumber(calculateTotalNet())} F
+                        <span className="font-bold text-lg text-foreground">
+                          Total : {formatNumber(calculateTotal())} F
                         </span>
                       </td>
                       <td className="px-3 py-2"></td>
                       <td className="px-3 py-2 text-right text-xl font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
-                        TOTAL : {formatNumber(calculateTotal())} F
+                        Total Net : {formatNumber(calculateTotalNet())} F
                       </td>
                     </tr>
                     <tr className="border-t border-gray-400 dark:border-gray-600 bg-muted/50">
@@ -909,7 +976,7 @@ export default function Achats() {
                       <td className="px-3 py-2"></td>
                       <td className="px-3 py-2"></td>
                       <td className="px-3 py-2 text-right">
-                        <span className="text-lg font-medium">Payé: </span>
+                        <span className="text-lg font-bold">Payé: </span>
                         <Input
                           type="number"
                           value={newEntree.paye === 0 ? "" : newEntree.paye}
@@ -922,7 +989,7 @@ export default function Achats() {
                         <span className="text-lg font-medium"> F</span>
                       </td>
                       <td className="px-3 py-2 text-right bg-muted/20">
-                        <span className="font-bold uppercase text-lg text-foreground">
+                        <span className="font-bold text-lg text-foreground">
                           Non payé : {formatNumber(calculateSommeRestante())} F
                         </span>
                       </td>
@@ -935,13 +1002,12 @@ export default function Achats() {
 
           <div className="flex justify-between items-center mt-4">
             <Button
-              variant="outline"
               onClick={handleAddLigne}
               disabled={isSaving}
-              className="gap-2"
+              size="icon"
+              className="h-14 w-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
             >
-              <Plus size={16} />
-              Ajouter un produit
+              <Plus size={24} />
             </Button>
             <div className="flex gap-2">
               <Button
@@ -989,36 +1055,42 @@ export default function Achats() {
                     className="border-2 border-solid border-border rounded-xl overflow-hidden shadow-md bg-background/80 hover:shadow-lg transition-shadow mb-6"
                   >
                     {/* En-tête de l'entrée */}
-                    <div className="px-4 py-3 border-b-2 border-solid border-border bg-muted/30 flex items-center justify-between">
-                      <div className="font-bold text-base">
-                        Nom du client : {getClientName(entree)}
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-base font-bold">
-                          {entree.numero_entree && (
-                            <span>
-                              N° reçu : {entree.numero_entree}
-                            </span>
-                          )}
+                    {(() => {
+                      const nonPaye = (entree.montant_net || 0) - ((entree as any).paye || 0);
+                      const hasNonPaye = nonPaye > 0;
+                      return (
+                        <div className={`px-4 py-3 border-b-2 border-solid ${hasNonPaye ? 'border-red-600 dark:border-red-400 bg-red-100 dark:bg-red-900/30' : 'border-border bg-muted/30'} flex items-center justify-between`}>
+                          <div className={`font-bold text-base ${hasNonPaye ? 'text-red-700 dark:text-red-300' : ''}`}>
+                            Nom du client : {getClientName(entree)}
+                          </div>
+                          <div className="flex items-center gap-6">
+                            <div className={`text-base font-bold ${hasNonPaye ? 'text-red-700 dark:text-red-300' : ''}`}>
+                              {entree.numero_entree && (
+                                <span>
+                                  N° reçu : {entree.numero_entree}
+                                </span>
+                              )}
+                            </div>
+                            <div className={`text-base font-bold ${hasNonPaye ? 'text-red-700 dark:text-red-300' : ''}`}>
+                              {entree.date && (
+                                <span>
+                                  Date : {formatDateDisplay(entree.date)}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => generatePDF(entree)}
+                              className="gap-2"
+                            >
+                              <Download size={16} />
+                              PDF
+                            </Button>
+                          </div>
                         </div>
-                        <div className="text-base font-bold">
-                          {entree.date && (
-                            <span>
-                              Date : {formatDateDisplay(entree.date)}
-                            </span>
-                          )}
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => generatePDF(entree)}
-                          className="gap-2"
-                        >
-                          <Download size={16} />
-                          Télécharger PDF
-                        </Button>
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     {/* Tableau des produits (même structure que le formulaire) */}
                     <div className="p-2">
@@ -1083,19 +1155,19 @@ export default function Achats() {
                                 <span className="text-lg font-medium">Charge: {formatNumber((entree as any).autres_charges || entree.charge || 0)} F</span>
                               </td>
                               <td className="px-3 py-2 text-right">
-                                <span className="text-lg font-medium">Restant: {formatNumber((entree as any).restant || 0)} F</span>
+                                <span className="text-lg font-medium">Ancien Reste: {formatNumber((entree as any).restant || 0)} F</span>
                               </td>
                               <td className="px-3 py-2 text-right">
                                 <span className="text-lg font-medium">Avance: {formatNumber((entree as any).avance || 0)} F</span>
                               </td>
                               <td className="px-3 py-2 text-right">
                                 <span className="font-bold uppercase text-lg text-foreground">
-                                  TOTAL NET : {formatNumber(entree.montant_net || 0)} F
+                                  Total : {formatNumber(entree.montant_ht || 0)} F
                                 </span>
                               </td>
                               <td className="px-3 py-2"></td>
                               <td className="px-3 py-2 text-right text-xl font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
-                                TOTAL : {formatNumber(entree.montant_ht || 0)} F
+                                Total Net : {formatNumber(entree.montant_net || 0)} F
                               </td>
                             </tr>
                             <tr className="border-t border-gray-400 dark:border-gray-600 bg-muted/50">
@@ -1107,7 +1179,7 @@ export default function Achats() {
                                 <span className="text-lg font-medium">Payé: {formatNumber((entree as any).paye || 0)} F</span>
                               </td>
                               <td className="px-3 py-2 text-right bg-muted/20">
-                                <span className="font-bold uppercase text-lg text-foreground">
+                                <span className="font-bold text-lg text-foreground">
                                   Non payé : {formatNumber((entree.montant_net || 0) - ((entree as any).paye || 0))} F
                                 </span>
                               </td>
