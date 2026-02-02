@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Users, Plus, Loader2, Trash2 } from "lucide-react";
+import { Users, Plus, Loader2, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -223,6 +223,16 @@ export default function ListeEmployes() {
         title="Liste des Employés"
         description="Sélectionnez un employé pour voir son suivi de dépenses"
         icon={Users}
+        action={
+          <Button 
+            variant="secondary" 
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft size={16} />
+            Retour
+          </Button>
+        }
       />
 
       {/* Liste des employés */}
@@ -279,11 +289,6 @@ export default function ListeEmployes() {
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
               Êtes-vous sûr de vouloir supprimer l'employé <strong>{employeeToDelete?.full_name}</strong> ?
-              {employeeToDelete && (
-                <span className="block mt-2 text-destructive">
-                  Cette action supprimera également toutes les dépenses associées à cet employé. Cette action est irréversible.
-                </span>
-              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

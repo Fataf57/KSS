@@ -3,6 +3,16 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Users, Plus, Trash2, Save, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +69,26 @@ const getMonthFromDate = (dateString: string): string => {
   return `${MOIS_FRANCAIS[month]} ${year}`;
 };
 
+// Fonction pour trier les lignes par ordre d'insertion (comme dans SuiviClients)
+const sortRowsByInsertionOrder = (rows: EmployeeExpenseRow[]): EmployeeExpenseRow[] => {
+  return [...rows].sort((a, b) => {
+    if (a.isSaved && b.isSaved) {
+      // Pour les lignes enregistrées, utiliser savedId (ID de la base = ordre d'insertion)
+      return (a.savedId || 0) - (b.savedId || 0);
+    }
+    if (a.isSaved && !b.isSaved) {
+      // Les lignes enregistrées avant les non enregistrées
+      return -1;
+    }
+    if (!a.isSaved && b.isSaved) {
+      // Les lignes enregistrées avant les non enregistrées
+      return 1;
+    }
+    // Pour les lignes non enregistrées, utiliser id (ordre de création côté frontend)
+    return a.id - b.id;
+  });
+};
+
 // Fonction pour formater la date au format "jj/mm/aaaa" (ex: "12/03/2026")
 const formatDateDisplay = (dateString: string): string => {
   if (!dateString) return "";
@@ -102,6 +132,8 @@ export default function SuiviEmployes() {
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(true);
   const [employees, setEmployees] = useState<Array<{id: number, full_name: string}>>([]);
   const [currentEmployee, setCurrentEmployee] = useState<{id: number, full_name: string} | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -191,8 +223,12 @@ export default function SuiviEmployes() {
           
           // Combiner les deux sources (API + localStorage non enregistrées)
           const allRows = [...apiRows, ...localRows];
-          // Recalculer les sommes restantes de manière cumulative
-          setRows(recalculateSommeRestante(allRows));
+          
+          // Trier les lignes par ordre d'insertion (savedId pour les enregistrées, id pour les non enregistrées)
+          const orderedRows = sortRowsByInsertionOrder(allRows);
+          
+          // Recalculer les sommes restantes de manière cumulative (cela préservera l'ordre)
+          setRows(recalculateSommeRestante(orderedRows));
           
           const maxId = allRows.length > 0 
             ? Math.max(...allRows.map((r: EmployeeExpenseRow) => r.id))
@@ -222,14 +258,10 @@ export default function SuiviEmployes() {
 
   // Fonction pour recalculer toutes les sommes restantes de manière cumulative
   const recalculateSommeRestante = (rowsToCalculate: EmployeeExpenseRow[]): EmployeeExpenseRow[] => {
-    // Trier les lignes par date puis par ID
-    const sortedRows = [...rowsToCalculate].sort((a, b) => {
-      if (!a.date) return 1;
-      if (!b.date) return -1;
-      const dateDiff = new Date(a.date).getTime() - new Date(b.date).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return a.id - b.id;
-    });
+    // Préserver l'ordre d'insertion : ne pas trier, garder l'ordre tel quel
+    // Les lignes enregistrées doivent rester dans leur ordre d'insertion
+    // Les lignes non enregistrées doivent rester à leur position d'ajout (généralement en bas)
+    const sortedRows = [...rowsToCalculate];
 
     // Calculer la somme restante de manière cumulative
     // Formule : somme_restante_précédente + somme_remise - somme_depense
@@ -291,6 +323,22 @@ export default function SuiviEmployes() {
     // Recalculer toutes les sommes restantes après ajout
     setRows(recalculateSommeRestante(updatedRows));
     setNextId(nextId + 1);
+  };
+
+  const handleDeleteClick = (id: number) => {
+    const row = rows.find(r => r.id === id);
+    if (!row) return;
+
+    setRowToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (rowToDelete !== null) {
+      await deleteRow(rowToDelete);
+      setDeleteDialogOpen(false);
+      setRowToDelete(null);
+    }
   };
 
   const deleteRow = async (id: number) => {
@@ -532,8 +580,12 @@ export default function SuiviEmployes() {
             
             // Combiner les deux sources (API + localStorage non enregistrées)
             const allRows = [...apiRows, ...localRows];
-            // Recalculer les sommes restantes de manière cumulative
-            const recalculatedRows = recalculateSommeRestante(allRows);
+            
+            // Trier les lignes par ordre d'insertion (savedId pour les enregistrées, id pour les non enregistrées)
+            const orderedRows = sortRowsByInsertionOrder(allRows);
+            
+            // Recalculer les sommes restantes de manière cumulative (cela préservera l'ordre)
+            const recalculatedRows = recalculateSommeRestante(orderedRows);
             setRows(recalculatedRows);
             
             // Mettre à jour le localStorage avec seulement les lignes non enregistrées
@@ -564,15 +616,13 @@ export default function SuiviEmployes() {
     }
   };
 
-  // Organiser les lignes par mois
+  // Organiser les lignes par mois (en préservant l'ordre d'insertion)
   const organizeRowsByMonth = () => {
     if (rows.length === 0) return [];
     
-    const sortedRows = [...rows].sort((a, b) => {
-      if (!a.date) return 1;
-      if (!b.date) return -1;
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+    // Ne pas trier par date, garder l'ordre d'insertion
+    // Les lignes sont déjà dans le bon ordre grâce à sortRowsByInsertionOrder
+    const sortedRows = [...rows];
     
     const organized: Array<{ row: EmployeeExpenseRow, month?: string, showMonth?: boolean }> = [];
     let currentMonth = "";
@@ -603,14 +653,6 @@ export default function SuiviEmployes() {
             icon={Users}
             action={
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate("/liste-employes")}
-                  className="gap-2"
-                >
-                  <ArrowLeft size={16} />
-                  Retour
-                </Button>
                 {currentEmployee && (
                   <>
                     <Button onClick={addRow} className="gap-2">
@@ -618,9 +660,8 @@ export default function SuiviEmployes() {
                       Nouvelle ligne
                     </Button>
                     <Button 
-                      variant="secondary" 
                       onClick={handleSave} 
-                      className="gap-2"
+                      className="gap-2 bg-green-600 hover:bg-green-700 text-white"
                       disabled={isSaving || rows.filter(r => !r.isSaved).length === 0}
                     >
                       {isSaving ? (
@@ -637,6 +678,14 @@ export default function SuiviEmployes() {
                     </Button>
                   </>
                 )}
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate(-1)}
+                  className="gap-2"
+                >
+                  <ArrowLeft size={16} />
+                  Retour
+                </Button>
               </div>
             }
           />
@@ -752,28 +801,15 @@ export default function SuiviEmployes() {
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-center">
                           <div className="flex items-center justify-center gap-1">
-                            {!row.isSaved && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteRow(row.id)}
-                                className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                title="Supprimer cette ligne"
-                              >
-                                <Trash2 size={14} />
-                              </Button>
-                            )}
-                            {row.isSaved && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteRow(row.id)}
-                                className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                title="Supprimer cette ligne"
-                              >
-                                <Trash2 size={14} />
-                              </Button>
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteClick(row.id)}
+                              className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              title="Supprimer cette ligne"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -828,6 +864,35 @@ export default function SuiviEmployes() {
           <Plus size={24} />
         </Button>
       )}
+
+      {/* Modal de confirmation de suppression */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette ligne ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSaving}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isSaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Suppression...
+                </>
+              ) : (
+                "Supprimer"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

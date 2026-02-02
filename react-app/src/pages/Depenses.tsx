@@ -1,9 +1,20 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Receipt, Plus, Trash2, Loader2, Download, StopCircle, Save } from "lucide-react";
+import { Receipt, Plus, Trash2, Loader2, Download, StopCircle, Save, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
 import jsPDF from "jspdf";
@@ -109,6 +120,9 @@ export default function Depenses() {
   const [isStopping, setIsStopping] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [periodStops, setPeriodStops] = useState<any[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<number | null>(null);
+  const navigate = useNavigate();
   const { toast } = useToast();
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
@@ -298,7 +312,7 @@ export default function Depenses() {
     return periodStops.some(stop => stop.savedId && stop.savedId > row.savedId);
   };
 
-  const deleteRow = async (id: number) => {
+  const handleDeleteClick = (id: number) => {
     const row = rows.find(r => r.id === id);
     if (!row) return;
 
@@ -321,6 +335,14 @@ export default function Depenses() {
       });
       return;
     }
+
+    setRowToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteRow = async (id: number) => {
+    const row = rows.find(r => r.id === id);
+    if (!row) return;
 
     if (row.isSaved && row.savedId) {
       try {
@@ -348,9 +370,20 @@ export default function Depenses() {
           variant: "destructive",
         });
         return;
+      } finally {
+        setDeleteDialogOpen(false);
+        setRowToDelete(null);
       }
     } else {
       setRows(rows.filter(row => row.id !== id));
+      setDeleteDialogOpen(false);
+      setRowToDelete(null);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (rowToDelete !== null) {
+      await deleteRow(rowToDelete);
     }
   };
 
@@ -360,8 +393,7 @@ export default function Depenses() {
     
     // Permettre l'enregistrement si la ligne est complètement vide
     const isRowEmpty = !row.date && !row.nom_depense?.trim() && 
-                       (row.somme === null || row.somme === undefined || row.somme <= 0) &&
-                       !row.nom_personne?.trim();
+                       (row.somme === null || row.somme === undefined || row.somme <= 0);
     if (isRowEmpty) return null;
     
     // Si au moins un champ est rempli, valider les champs requis
@@ -1112,6 +1144,14 @@ export default function Depenses() {
                     </>
                   )}
                 </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate(-1)}
+                  className="gap-2"
+                >
+                  <ArrowLeft size={16} />
+                  Retour
+                </Button>
               </div>
             }
           />
@@ -1235,7 +1275,7 @@ export default function Depenses() {
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      onClick={() => deleteRow(row.id)}
+                                      onClick={() => handleDeleteClick(row.id)}
                                       disabled={isDepenseInStoppedPeriod(row)}
                                       className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
                                       title={isDepenseInStoppedPeriod(row) ? "Impossible de supprimer une dépense d'une période déjà arrêtée" : "Supprimer cette ligne"}
@@ -1317,6 +1357,35 @@ export default function Depenses() {
       >
         <Plus size={24} />
       </Button>
+
+      {/* Modal de confirmation de suppression */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette dépense ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSaving}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isSaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Suppression...
+                </>
+              ) : (
+                "Supprimer"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

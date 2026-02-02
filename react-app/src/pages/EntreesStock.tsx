@@ -1,9 +1,19 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Package, Plus, Trash2, Save, Loader2, Eye } from "lucide-react";
+import { Package, Plus, Trash2, Save, Loader2, Eye, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -69,6 +79,8 @@ export default function EntreesStock() {
   const [nextId, setNextId] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -278,6 +290,17 @@ export default function EntreesStock() {
     }
   };
 
+  const handleDeleteClick = (id: number) => {
+    const row = rows.find(r => r.id === id);
+    if (!row) return;
+
+    // Seulement permettre la suppression si la ligne n'est pas enregistrée
+    if (!row.isSaved) {
+      setRowToDelete(id);
+      setDeleteDialogOpen(true);
+    }
+  };
+
   const deleteRow = (id: number) => {
     const row = rows.find(r => r.id === id);
     if (!row) return;
@@ -285,6 +308,14 @@ export default function EntreesStock() {
     // Seulement supprimer si la ligne n'est pas enregistrée
     if (!row.isSaved) {
       setRows(prevRows => prevRows.filter(row => row.id !== id));
+      setDeleteDialogOpen(false);
+      setRowToDelete(null);
+    }
+  };
+
+  const handleDeleteConfirm = () => {
+    if (rowToDelete !== null) {
+      deleteRow(rowToDelete);
     }
   };
 
@@ -298,9 +329,6 @@ export default function EntreesStock() {
     // Si au moins un champ est rempli, valider les champs requis
     if (!row.date) return "La date est requise";
     if (!row.type_operation) return "Le type d'opération est requis";
-    if (row.type_operation === 'entree' && !row.nom_fournisseur.trim()) {
-      return "Le nom du client est requis pour une entrée";
-    }
     if (!row.type_denree.trim()) return "Le type de denrée est requis";
     if (row.nombre_sacs <= 0) return "Le nombre de sacs doit être supérieur à 0";
     if (row.poids_par_sac <= 0) return "Le poids par sac doit être supérieur à 0";
@@ -408,22 +436,6 @@ export default function EntreesStock() {
       // Recharger l'historique pour afficher les lignes enregistrées
       window.dispatchEvent(new Event('stock-updated'));
       await fetchHistory();
-      
-      // Ajouter une nouvelle ligne vide pour continuer la saisie
-      const newRow: EntreeStockRow = {
-        id: nextId,
-        date: new Date().toISOString().split('T')[0],
-        type_operation: '',
-        nom_fournisseur: "",
-        type_denree: "",
-        nombre_sacs: 0,
-        poids_par_sac: 0,
-        tonnage_total: 0,
-        numero_magasin: "2",
-        isSaved: false,
-      };
-      setRows(prevRows => [...prevRows, newRow]);
-      setNextId(nextId + 1);
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -439,11 +451,25 @@ export default function EntreesStock() {
   const organizeRowsByMonth = () => {
     if (rows.length === 0) return [];
     
-    // Trier les lignes par date
+    // Trier les lignes : d'abord les enregistrées (par savedId), puis les non enregistrées (par id)
+    // Cela garantit que les nouvelles lignes apparaissent toujours à la fin
     const sortedRows = [...rows].sort((a, b) => {
-      if (!a.date) return 1;
-      if (!b.date) return -1;
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
+      // Séparer les lignes enregistrées des non enregistrées
+      if (a.isSaved && b.isSaved) {
+        // Les deux sont enregistrées : trier par savedId
+        return (a.savedId || 0) - (b.savedId || 0);
+      } else if (!a.isSaved && !b.isSaved) {
+        // Les deux ne sont pas enregistrées : trier par id
+        return a.id - b.id;
+      } else {
+        // Mélange de lignes enregistrées et non enregistrées
+        // Les lignes enregistrées viennent toujours avant les non enregistrées
+        if (a.isSaved && !b.isSaved) {
+          return -1; // a vient avant b
+        } else {
+          return 1; // b vient avant a
+        }
+      }
     });
     
     const organized: Array<{ row: EntreeStockRow; month?: string; showMonth?: boolean }> = [];
@@ -511,6 +537,14 @@ export default function EntreesStock() {
                     </>
                   )}
                 </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate(-1)}
+                  className="gap-2"
+                >
+                  <ArrowLeft size={16} />
+                  Retour
+                </Button>
               </div>
             }
           />
@@ -528,7 +562,6 @@ export default function EntreesStock() {
               <table className="w-full border-collapse">
             <thead>
               <tr className="bg-muted sticky top-0 z-20">
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-xl text-card-foreground w-[80px] bg-muted">N°</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground w-[180px] bg-muted">Date</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Type</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[250px] bg-muted">Client</th>
@@ -557,9 +590,6 @@ export default function EntreesStock() {
                           : "hover:bg-muted/20"
                     }`}
                   >
-                    <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-center font-medium text-xl text-foreground">
-                      {index + 1}
-                    </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 p-0">
                     <Input
                       type="text"
@@ -654,7 +684,7 @@ export default function EntreesStock() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => deleteRow(row.id)}
+                          onClick={() => handleDeleteClick(row.id)}
                           className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                           title="Supprimer cette ligne"
                         >
@@ -708,6 +738,27 @@ export default function EntreesStock() {
       >
         <Plus size={24} />
       </Button>
+
+      {/* Modal de confirmation de suppression */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette ligne ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

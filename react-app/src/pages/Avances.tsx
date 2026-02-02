@@ -1,11 +1,12 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DollarSign, Plus, Trash2, Save, Loader2 } from "lucide-react";
+import { DollarSign, Plus, Trash2, Save, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 interface AvanceRow {
@@ -52,6 +53,7 @@ export default function Avances() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRowId, setSelectedRowId] = useState<number | null>(null);
   const [remboursementMontant, setRemboursementMontant] = useState("");
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   // Charger depuis localStorage
@@ -215,6 +217,14 @@ export default function Avances() {
                       Enregistrer
                     </>
                   )}
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate(-1)}
+                  className="gap-2"
+                >
+                  <ArrowLeft size={16} />
+                  Retour
                 </Button>
               </div>
             }

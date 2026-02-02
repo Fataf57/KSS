@@ -167,10 +167,14 @@ export default function DetailStock() {
 
   const formatNumber = (value: number) => {
     // Supprimer les décimales inutiles (.00)
-    if (value % 1 === 0) {
+    // Vérifier si c'est un entier ou si les décimales sont nulles
+    if (value % 1 === 0 || Math.abs(value % 1) < 0.001) {
       return value.toLocaleString('fr-FR', { maximumFractionDigits: 0 });
     }
-    return value.toLocaleString('fr-FR', { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+    // Formater avec 2 décimales max, mais supprimer les .00 à la fin
+    const formatted = value.toLocaleString('fr-FR', { maximumFractionDigits: 2, minimumFractionDigits: 0 });
+    // Supprimer les .00 à la fin si présents (pour les cas comme 50.00)
+    return formatted.replace(/\.00$/, '');
   };
 
   return (
@@ -179,18 +183,6 @@ export default function DetailStock() {
         title={
           <div className="flex items-center gap-5">
             <span>Détails du Stock</span>
-            <Button 
-              variant="secondary" 
-              onClick={() => {
-                // Déclencher un rafraîchissement avant de revenir
-                window.dispatchEvent(new Event('stock-updated'));
-                navigate("/entrees-stock");
-              }}
-              className="gap-2"
-            >
-              <ArrowLeft size={16} />
-              Retour
-            </Button>
             <div className="flex gap-3 border border-border rounded-full px-4 py-2 bg-muted/40 shadow-sm ml-10">
               <Button
                 variant={selectedMagasin === "2" ? "default" : "ghost"}
@@ -222,14 +214,28 @@ export default function DetailStock() {
         icon={Package}
         action={
           selectedMagasin && (
-            <Button
-              variant="outline"
-              onClick={handleOpenHistory}
-              className="gap-2"
-            >
-              <History size={16} />
-              Historique
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleOpenHistory}
+                className="gap-2"
+              >
+                <History size={16} />
+                Historique
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  // Déclencher un rafraîchissement avant de revenir
+                  window.dispatchEvent(new Event('stock-updated'));
+                  navigate(-1);
+                }}
+                className="gap-2"
+              >
+                <ArrowLeft size={16} />
+                Retour
+              </Button>
+            </div>
           )
         }
       />

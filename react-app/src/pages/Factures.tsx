@@ -3,7 +3,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { FileText, Plus, Download, Eye } from "lucide-react";
+import { FileText, Plus, Download, Eye, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const factures = [
   { id: 1, number: "F-2024-089", client: "Martin SARL", date: "03/12/2025", dueDate: "03/01/2026", amount: 2450.00, status: "Payée" },
@@ -56,6 +57,7 @@ const columns = [
 ];
 
 const Factures = () => {
+  const navigate = useNavigate();
   return (
     <DashboardLayout>
       <PageHeader
@@ -63,10 +65,20 @@ const Factures = () => {
         description="Gérez vos factures et paiements"
         icon={FileText}
         action={
-          <Button className="gap-2">
-            <Plus size={16} />
-            Nouvelle facture
-          </Button>
+          <div className="flex gap-2">
+            <Button className="gap-2">
+              <Plus size={16} />
+              Nouvelle facture
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour
+            </Button>
+          </div>
         }
       />
 

@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { ShoppingCart, Plus, ArrowRight, Loader2, Trash2 } from "lucide-react";
+import { ShoppingCart, Plus, ArrowRight, Loader2, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -230,13 +230,14 @@ export default function ListeAchats() {
         description="Sélectionnez un client (fournisseur) pour voir le suivi de ses achats"
         icon={ShoppingCart}
         action={
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus size={16} />
-                Ajouter un client
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus size={16} />
+                  Ajouter un client
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Nouveau Client</DialogTitle>
@@ -272,6 +273,15 @@ export default function ListeAchats() {
               </div>
             </DialogContent>
           </Dialog>
+          <Button 
+            variant="secondary" 
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft size={16} />
+            Retour
+          </Button>
+          </div>
         }
       />
 
@@ -371,11 +381,6 @@ export default function ListeAchats() {
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
               Êtes-vous sûr de vouloir supprimer le client <strong>{clientToDelete?.full_name}</strong> ?
-              {clientToDelete && (
-                <span className="block mt-2 text-destructive">
-                  Cette action supprimera également tous les achats associés à ce client. Cette action est irréversible.
-                </span>
-              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

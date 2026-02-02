@@ -2,7 +2,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { Zap, Plus, Clock, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { Zap, Plus, Clock, CheckCircle2, AlertCircle, ArrowRight, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const actions = [
   {
@@ -54,6 +55,7 @@ const completedActions = [
 ];
 
 const Actions = () => {
+  const navigate = useNavigate();
   return (
     <DashboardLayout>
       <PageHeader
@@ -61,10 +63,20 @@ const Actions = () => {
         description="Gérez vos tâches et rappels"
         icon={Zap}
         action={
-          <Button className="gap-2">
-            <Plus size={16} />
-            Nouvelle action
-          </Button>
+          <div className="flex gap-2">
+            <Button className="gap-2">
+              <Plus size={16} />
+              Nouvelle action
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour
+            </Button>
+          </div>
         }
       />
 

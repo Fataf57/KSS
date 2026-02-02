@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Users, Plus, Loader2, Trash2 } from "lucide-react";
+import { Users, Plus, Loader2, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -222,6 +222,16 @@ export default function ListeClients() {
       <PageHeader
         title="Liste des Clients"
         icon={Users}
+        action={
+          <Button 
+            variant="secondary" 
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft size={16} />
+            Retour
+          </Button>
+        }
       />
 
       {/* Liste des clients */}
@@ -278,11 +288,6 @@ export default function ListeClients() {
             <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
             <AlertDialogDescription>
               Êtes-vous sûr de vouloir supprimer le client <strong>{clientToDelete?.full_name}</strong> ?
-              {clientToDelete && (
-                <span className="block mt-2 text-destructive">
-                  Cette action supprimera également tous les chargements associés à ce client. Cette action est irréversible.
-                </span>
-              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

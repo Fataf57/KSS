@@ -1,10 +1,21 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Truck, Plus, Trash2, Save, Loader2, Check, FileDown, Edit, Download } from "lucide-react";
+import { Truck, Plus, Trash2, Save, Loader2, Check, FileDown, Edit, Download, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
 import jsPDF from "jspdf";
@@ -167,6 +178,9 @@ export default function ChargementCamion() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [savingRowId, setSavingRowId] = useState<number | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<number | null>(null);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   // Charger l'historique depuis l'API
@@ -361,6 +375,14 @@ export default function ChargementCamion() {
     }, 100);
   };
 
+  const handleDeleteClick = (id: number) => {
+    const row = rows.find(r => r.id === id);
+    if (!row) return;
+
+    setRowToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
   const deleteRow = async (id: number) => {
     const row = rows.find(r => r.id === id);
     if (!row) return;
@@ -418,10 +440,21 @@ export default function ChargementCamion() {
           description: errorMessage,
           variant: "destructive",
         });
+      } finally {
+        setDeleteDialogOpen(false);
+        setRowToDelete(null);
       }
     } else {
       // Si la ligne n'est pas enregistrée, supprimer du state
       setRows(prevRows => prevRows.filter(row => row.id !== id));
+      setDeleteDialogOpen(false);
+      setRowToDelete(null);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (rowToDelete !== null) {
+      await deleteRow(rowToDelete);
     }
   };
 
@@ -1099,6 +1132,14 @@ export default function ChargementCamion() {
                     </>
                   )}
                 </Button>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate(-1)}
+                  className="gap-2"
+                >
+                  <ArrowLeft size={16} />
+                  Retour
+                </Button>
               </div>
             }
           />
@@ -1113,21 +1154,22 @@ export default function ChargementCamion() {
           ) : (
           <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex-1 flex flex-col min-h-0 h-full">
             <div className="overflow-auto flex-1 min-h-0 h-full pb-20">
-              <table className="w-full border-collapse">
+              <div className="overflow-x-auto min-w-full">
+                <table className="w-full border-collapse min-w-[1400px]">
             <thead>
                     <tr className="bg-muted sticky top-0 z-20">
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground w-[140px] bg-muted">Date</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[200px] bg-muted">Ville</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Produit</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[55px] bg-muted">Nbr sac</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[65px] bg-muted">Poids sac</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[110px] bg-muted">Tonnage</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[120px] bg-muted">N° camion</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[120px] bg-muted">N° chauffeur</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[140px] bg-muted">Poid arrivé</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[80px] bg-muted">Poids manqué</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[140px] bg-muted">Dépenses</th>
-                      <th className="px-0.5 py-2 text-center font-semibold text-xl text-card-foreground w-7 bg-muted">#</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground w-[120px] md:w-[140px] bg-muted">Date</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[160px] md:min-w-[200px] bg-muted">Ville</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">Produit</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[50px] md:min-w-[55px] bg-muted">Nbr sac</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[60px] md:min-w-[65px] bg-muted">Poids sac</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[90px] md:min-w-[110px] bg-muted">Tonnage</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">N° camion</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">N° chauffeur</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[120px] md:min-w-[140px] bg-muted">Poid arrivé</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-sm md:text-xl text-card-foreground min-w-[120px] md:min-w-[140px] bg-muted">Dépenses</th>
+                      <th className="px-0.5 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground w-7 bg-muted">#</th>
               </tr>
             </thead>
             <tbody>
@@ -1159,7 +1201,7 @@ export default function ChargementCamion() {
                       type="text"
                       value={row.date_chargement ? convertDateToDisplay(row.date_chargement) : ""}
                       onChange={(e) => updateCell(row.id, "date_chargement", e.target.value)}
-                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground"
+                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground"
                       placeholder="jj/mm/aaaa"
                     />
                   </td>
@@ -1178,14 +1220,14 @@ export default function ChargementCamion() {
                             }
                           }
                         }}
-                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground flex-1"
+                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground flex-1"
                       />
                       <span className="text-xs font-medium px-0">-</span>
                       <Input
                         type="text"
                         value={row.ville_arrivee || ""}
                         onChange={(e) => updateCell(row.id, "ville_arrivee", e.target.value)}
-                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground flex-1"
+                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground flex-1"
                       />
                     </div>
                   </td>
@@ -1195,7 +1237,7 @@ export default function ChargementCamion() {
                       list="types-denree"
                       value={row.type_denree}
                       onChange={(e) => updateCell(row.id, "type_denree", e.target.value)}
-                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xl md:text-xl font-medium text-foreground"
+                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-xl font-medium text-foreground"
                     />
                   </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 p-0">
@@ -1203,7 +1245,7 @@ export default function ChargementCamion() {
                       type="number"
                       value={row.nombre_sacs || ""}
                       onChange={(e) => updateCell(row.id, "nombre_sacs", Number(e.target.value))}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-sm md:text-xl font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       min="0"
                     />
                   </td>
@@ -1212,14 +1254,14 @@ export default function ChargementCamion() {
                       type="number"
                       value={row.poids_par_sac || ""}
                       onChange={(e) => updateCell(row.id, "poids_par_sac", Number(e.target.value))}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-sm md:text-xl font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       min="0"
                       step="0.01"
                     />
                   </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xl text-foreground bg-muted/20">
-                    <span className="block w-full text-right text-lg">
-                      {row.tonnage_total.toLocaleString()} <span className="text-base">kg</span>
+                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl text-foreground bg-muted/20">
+                    <span className="block w-full text-right text-sm md:text-lg">
+                      {row.tonnage_total.toLocaleString()} <span className="text-xs md:text-base">kg</span>
                     </span>
                   </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 p-0">
@@ -1227,7 +1269,7 @@ export default function ChargementCamion() {
                             type="text"
                             value={row.numero_camion}
                             onChange={(e) => updateCell(row.id, "numero_camion", e.target.value)}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground"
                           />
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">
@@ -1238,7 +1280,7 @@ export default function ChargementCamion() {
                               const cleaned = e.target.value.replace(/\s/g, '');
                               updateCell(row.id, "numero_chauffeur", cleaned);
                             }}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-base md:text-base font-medium text-foreground"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-base font-medium text-foreground"
                           />
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">
@@ -1251,23 +1293,23 @@ export default function ChargementCamion() {
                                 const numValue = cleaned === "" ? null : Number(cleaned);
                                 updateCell(row.id, "poids_arrive", isNaN(numValue as number) ? null : numValue);
                               }}
-                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-lg md:text-lg font-medium text-foreground flex-1"
+                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-sm md:text-lg font-medium text-foreground flex-1"
                             />
-                            <span className="text-base font-medium text-foreground">kg</span>
+                            <span className="text-xs md:text-base font-medium text-foreground">kg</span>
                           </div>
                         </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xl text-foreground bg-muted/20">
-                          <span className="block w-full text-right text-lg">
+                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl text-foreground bg-muted/20">
+                          <span className="block w-full text-right text-sm md:text-lg">
                             {poidsManquantValue !== null && poidsManquantValue !== undefined 
                               ? (
                                 <>
-                                  {poidsManquantValue.toLocaleString()} <span className="text-base">kg</span>
+                                  {poidsManquantValue.toLocaleString()} <span className="text-xs md:text-base">kg</span>
                                 </>
                               )
                               : "-"}
                           </span>
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xl bg-muted/10">
+                  <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl bg-muted/10">
                     <div className="flex items-center justify-end gap-0 w-full">
                       <Input
                         type="text"
@@ -1277,9 +1319,9 @@ export default function ChargementCamion() {
                           const numValue = cleaned === "" ? 0 : Number(cleaned);
                           updateCell(row.id, "depenses", isNaN(numValue) ? 0 : numValue);
                         }}
-                        className="border-0 rounded-none h-9 bg-transparent text-right text-lg md:text-lg w-full font-medium text-foreground"
+                        className="border-0 rounded-none h-9 bg-transparent text-right text-sm md:text-lg w-full font-medium text-foreground"
                       />
-                      <span className="text-sm font-medium">F</span>
+                      <span className="text-xs md:text-sm font-medium">F</span>
                     </div>
                   </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-center">
@@ -1287,7 +1329,7 @@ export default function ChargementCamion() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => deleteRow(row.id)}
+                        onClick={() => handleDeleteClick(row.id)}
                         className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                         title="Supprimer cette ligne"
                       >
@@ -1309,6 +1351,7 @@ export default function ChargementCamion() {
               })}
               </tbody>
             </table>
+              </div>
             </div>
           </div>
           )}
@@ -1338,6 +1381,35 @@ export default function ChargementCamion() {
       >
         <Plus size={24} />
       </Button>
+
+      {/* Modal de confirmation de suppression */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce chargement ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSaving}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isSaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Suppression...
+                </>
+              ) : (
+                "Supprimer"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

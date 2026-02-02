@@ -108,6 +108,25 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Section Contacts Mali */}
+      <section className="mb-10">
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
+          <h2 className="text-base font-semibold text-card-foreground flex items-center gap-2">
+            <Phone className="w-5 h-5 text-accent" />
+            <span>Contacts Mali</span>
+          </h2>
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Téléphones
+            </p>
+            <div className="flex flex-col text-sm text-card-foreground space-y-1">
+              <span>TEL: +223 73 73 73 44</span>
+              <span>TEL: +223 74 52 11 47</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Section denrées */}
       <section className="bg-card rounded-xl border border-border p-6 animate-fade-in mb-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

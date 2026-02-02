@@ -1,12 +1,23 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { ShoppingCart, Plus, Trash2, Save, Loader2, X, Download } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Save, Loader2, X, Download, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
 import jsPDF from "jspdf";
@@ -57,6 +68,8 @@ export default function Achats() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entreeToDelete, setEntreeToDelete] = useState<number | null>(null);
   const [newEntree, setNewEntree] = useState<EntreeAchat>({
     date: new Date().toISOString().split('T')[0],
     nom_client: "",
@@ -75,6 +88,7 @@ export default function Achats() {
       },
     ],
   });
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -378,14 +392,17 @@ export default function Achats() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette entrée d'achat ?")) {
-      return;
-    }
+  const handleDeleteClick = (id: number) => {
+    setEntreeToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!entreeToDelete) return;
 
     setIsSaving(true);
     try {
-      const response = await fetch(getApiUrl(`entrees-achat/${id}/`), {
+      const response = await fetch(getApiUrl(`entrees-achat/${entreeToDelete}/`), {
         method: "DELETE",
       });
 
@@ -398,6 +415,8 @@ export default function Achats() {
         description: "Entrée d'achat supprimée",
       });
 
+      setDeleteDialogOpen(false);
+      setEntreeToDelete(null);
       fetchEntrees();
     } catch (error: any) {
       toast({
@@ -808,6 +827,16 @@ export default function Achats() {
       <PageHeader
         title="Achats"
         icon={ShoppingCart}
+        action={
+          <Button 
+            variant="secondary" 
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft size={16} />
+            Retour
+          </Button>
+        }
       />
 
       {/* Formulaire d'entrée (affiché directement) */}
@@ -1196,6 +1225,35 @@ export default function Achats() {
           </div>
         )}
       </div>
+
+      {/* Modal de confirmation de suppression */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette entrée d'achat ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSaving}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isSaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Suppression...
+                </>
+              ) : (
+                "Supprimer"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

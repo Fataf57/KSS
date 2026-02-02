@@ -3,6 +3,16 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { ShoppingCart, Plus, Trash2, Save, Loader2, Check, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -128,6 +138,8 @@ export default function SuiviAchats() {
   const [savingRowId, setSavingRowId] = useState<number | null>(null);
   const [clients, setClients] = useState<Array<{id: number, full_name: string}>>([]);
   const [currentClient, setCurrentClient] = useState<{id: number, full_name: string} | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -312,13 +324,17 @@ export default function SuiviAchats() {
     setNextId(nextId + 1);
   };
 
-  const deleteRow = async (id: number) => {
+  const handleDeleteClick = (id: number) => {
     const row = rows.find(r => r.id === id);
     if (!row) return;
 
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette ligne ?")) {
-      return;
-    }
+    setRowToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteRow = async (id: number) => {
+    const row = rows.find(r => r.id === id);
+    if (!row) return;
 
     if (row.isSaved && row.savedId) {
       try {
@@ -399,6 +415,9 @@ export default function SuiviAchats() {
           variant: "destructive",
         });
         console.error("Erreur suppression:", error);
+      } finally {
+        setDeleteDialogOpen(false);
+        setRowToDelete(null);
       }
     } else {
       const updatedRows = rows.filter(row => row.id !== id);
@@ -407,6 +426,14 @@ export default function SuiviAchats() {
         title: "Succès",
         description: "Ligne supprimée",
       });
+      setDeleteDialogOpen(false);
+      setRowToDelete(null);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (rowToDelete !== null) {
+      await deleteRow(rowToDelete);
     }
   };
 
@@ -717,13 +744,12 @@ export default function SuiviAchats() {
             action={
               <div className="flex gap-2">
                 <Button 
-                  variant="ghost" 
-                  size="icon"
+                  variant="secondary" 
                   onClick={() => navigate("/liste-achats")}
-                  className="h-10 w-10"
-                  title="Retour à la liste des clients"
+                  className="gap-2"
                 >
-                  <ArrowLeft size={24} />
+                  <ArrowLeft size={16} />
+                  Retour
                 </Button>
                 {currentClient && (
                   <>
@@ -922,7 +948,7 @@ export default function SuiviAchats() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => deleteRow(row.id)}
+                            onClick={() => handleDeleteClick(row.id)}
                             className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                             title="Supprimer cette ligne"
                           >
@@ -979,6 +1005,35 @@ export default function SuiviAchats() {
           <Plus size={24} />
         </Button>
       )}
+
+      {/* Modal de confirmation de suppression */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cette ligne ?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSaving}>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isSaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin mr-2" />
+                  Suppression...
+                </>
+              ) : (
+                "Supprimer"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

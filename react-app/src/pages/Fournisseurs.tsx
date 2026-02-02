@@ -3,7 +3,8 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable } from "@/components/ui/DataTable";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
-import { Truck, Plus, MapPin } from "lucide-react";
+import { Truck, Plus, MapPin, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const fournisseurs = [
   { id: 1, name: "Tech Supplies Co.", category: "Électronique", country: "France", deliveryTime: "3-5 jours", status: "Actif", lastOrder: "28/11/2025" },
@@ -40,6 +41,7 @@ const columns = [
 ];
 
 const Fournisseurs = () => {
+  const navigate = useNavigate();
   return (
     <DashboardLayout>
       <PageHeader
@@ -47,10 +49,20 @@ const Fournisseurs = () => {
         description="Gérez vos fournisseurs et commandes"
         icon={Truck}
         action={
-          <Button className="gap-2">
-            <Plus size={16} />
-            Nouveau fournisseur
-          </Button>
+          <div className="flex gap-2">
+            <Button className="gap-2">
+              <Plus size={16} />
+              Nouveau fournisseur
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour
+            </Button>
+          </div>
         }
       />
 

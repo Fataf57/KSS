@@ -1,9 +1,10 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { ShoppingCart, Plus, Trash2, Save } from "lucide-react";
+import { ShoppingCart, Plus, Trash2, Save, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface VenteRow {
   id: number;
@@ -24,6 +25,7 @@ const initialData: VenteRow[] = [
 export default function Ventes() {
   const [rows, setRows] = useState<VenteRow[]>(initialData);
   const [nextId, setNextId] = useState(4);
+  const navigate = useNavigate();
 
   const updateCell = (id: number, field: keyof VenteRow, value: string | number) => {
     setRows(rows.map(row => {
@@ -69,6 +71,14 @@ export default function Ventes() {
             <Button variant="secondary" className="gap-2">
               <Save size={16} />
               Enregistrer
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={() => navigate(-1)}
+              className="gap-2"
+            >
+              <ArrowLeft size={16} />
+              Retour
             </Button>
           </div>
         }
