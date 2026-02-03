@@ -559,17 +559,20 @@ export default function EntreesStock() {
           ) : (
           <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex-1 flex flex-col min-h-0 h-full">
             <div className="overflow-auto flex-1 min-h-0 h-full pb-20">
-              <table className="w-full border-collapse min-w-[1400px]">
+              <table className="w-full border-collapse">
             <thead>
               <tr className="bg-muted sticky top-0 z-20">
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[180px] bg-muted">Date</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Type</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[250px] bg-muted">Client</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[200px] bg-muted">Nom Produit</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[100px] bg-muted">Nbr sac</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[120px] bg-muted">Poid sac</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[180px] bg-muted">Tonnage</th>
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Magasin</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm text-card-foreground w-[50px] bg-muted">
+                  N°
+                </th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[160px] bg-muted">Date</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[120px] bg-muted">Type</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[200px] bg-muted">Client</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[180px] bg-muted">Nom Produit</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[90px] bg-muted">Nbr sac</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[110px] bg-muted">Poid sac</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Tonnage</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[130px] bg-muted">Magasin</th>
                 <th className="px-0.5 py-2 text-center font-semibold text-xl text-card-foreground w-7 bg-muted">#</th>
               </tr>
             </thead>
@@ -590,7 +593,10 @@ export default function EntreesStock() {
                           : "hover:bg-muted/20"
                     }`}
                   >
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[180px]">
+                  <td className="border-r border-gray-400 dark:border-gray-600 px-1 text-center text-sm font-medium text-foreground">
+                    {index + 1}
+                  </td>
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[160px]">
                     <Input
                       type="text"
                       value={row.isSaved ? formatDateDisplay(row.date) : row.date}
