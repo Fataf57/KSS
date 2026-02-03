@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { title: "Acceuil", url: "/", icon: LayoutDashboard },
+  { title: "KSS", url: "/", icon: LayoutDashboard, isLogo: true },
   // Magasin : on pointe d'abord sur les détails du stock
   { title: "Magasin", url: "/detail-stock", icon: Warehouse },
   { title: "Camion", url: "/chargement-camion", icon: Loader },
@@ -36,23 +36,6 @@ export function Sidebar() {
           "h-16"
         )}
       >
-        {/* Logo */}
-        <div className="h-full flex items-center px-4 lg:px-6 border-r border-sidebar-border flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {/* Logo de l'ETABLISSEMENT KADER SAWADOGO */}
-            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center overflow-hidden border border-sidebar-border">
-              <img
-                src="/ksslogo.jpeg"
-                alt="Logo ETABLISSEMENT KADER SAWADOGO"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <span className="font-semibold text-lg tracking-tight hidden sm:inline">
-              KSS
-            </span>
-          </div>
-        </div>
-
         {/* Navigation - Horizontal */}
         <nav className="flex-1 py-2 px-3 overflow-x-auto">
           <ul className="flex items-center gap-1 h-full">
@@ -67,7 +50,17 @@ export function Sidebar() {
                   )}
                   activeClassName="bg-sidebar-accent text-sidebar-foreground font-medium"
                 >
-                  <item.icon size={22} />
+                  {item.isLogo ? (
+                    <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center overflow-hidden border border-sidebar-border">
+                      <img
+                        src="/ksslogo.jpeg"
+                        alt="Logo KSS"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <item.icon size={22} />
+                  )}
                   <span className="text-lg font-semibold hidden md:inline">
                     {item.title}
                   </span>

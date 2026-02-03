@@ -1159,8 +1159,8 @@ export default function ChargementCamion() {
             <thead>
                     <tr className="bg-muted sticky top-0 z-20">
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[110px] md:min-w-[130px] bg-muted">Date</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[140px] md:min-w-[170px] bg-muted">Ville</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Produit</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[170px] md:min-w-[200px] bg-muted">Ville</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Produit</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[85px] bg-muted">Nbr sac</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[60px] md:min-w-[65px] bg-muted">Poids sac</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[80px] md:min-w-[100px] bg-muted">Tonnage</th>
@@ -1168,7 +1168,7 @@ export default function ChargementCamion() {
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[90px] md:min-w-[110px] bg-muted">N° chauffeur</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Poid arrivé</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Dépenses</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Dépenses</th>
                       <th className="px-0.5 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground w-7 bg-muted">#</th>
               </tr>
             </thead>

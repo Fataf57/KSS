@@ -840,7 +840,7 @@ export default function Achats() {
       />
 
       {/* Formulaire d'entrée (affiché directement) */}
-      <div className="bg-card rounded-xl border border-border p-4 mt-4 mb-6">
+      <div className="bg-card rounded-xl border border-border p-4 mt-4 mb-6 -mx-6 lg:-mx-8">
         <div className="grid gap-4">
           {/* En-tête */}
           <div className="grid grid-cols-2 gap-4 mb-2">
@@ -1065,7 +1065,7 @@ export default function Achats() {
       </div>
 
       {/* Liste des entrées (ex2) */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
+      <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in -mx-6 lg:-mx-8">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -1077,7 +1077,7 @@ export default function Achats() {
                 Aucune entrée d'achat enregistrée. Cliquez sur "Nouvelle entrée" pour ajouter une entrée.
               </div>
             ) : (
-              <div className="space-y-8 p-4">
+              <div className="space-y-8">
                 {entrees.map((entree) => (
                   <div
                     key={entree.id}
@@ -1122,7 +1122,7 @@ export default function Achats() {
                     })()}
 
                     {/* Tableau des produits (même structure que le formulaire) */}
-                    <div className="p-2">
+                    <div className="p-1">
                       <table className="w-full border-collapse">
                       <thead className="sticky top-0 z-30">
                         <tr className="bg-muted">
