@@ -221,7 +221,6 @@ export default function ListeEmployes() {
     <DashboardLayout>
       <PageHeader
         title="Liste des Employés"
-        description="Sélectionnez un employé pour voir son suivi de dépenses"
         icon={Users}
         action={
           <Button 

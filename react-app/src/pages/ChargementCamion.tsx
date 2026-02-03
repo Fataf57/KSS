@@ -1155,21 +1155,45 @@ export default function ChargementCamion() {
           <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex-1 flex flex-col min-h-0 h-full">
             <div className="overflow-auto flex-1 min-h-0 h-full pb-20">
               <div className="overflow-x-auto min-w-full">
-                <table className="w-full border-collapse min-w-[1400px]">
+                <table className="w-full border-collapse min-w-[1200px] table-auto">
             <thead>
                     <tr className="bg-muted sticky top-0 z-20">
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground w-[120px] md:w-[140px] bg-muted">Date</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[160px] md:min-w-[200px] bg-muted">Ville</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">Produit</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[50px] md:min-w-[55px] bg-muted">Nbr sac</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[60px] md:min-w-[65px] bg-muted">Poids sac</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[90px] md:min-w-[110px] bg-muted">Tonnage</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">N° camion</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">N° chauffeur</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[120px] md:min-w-[140px] bg-muted">Poid arrivé</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-sm md:text-xl text-card-foreground min-w-[120px] md:min-w-[140px] bg-muted">Dépenses</th>
-                      <th className="px-0.5 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground w-7 bg-muted">#</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground w-[120px] md:w-[140px] bg-muted whitespace-nowrap">
+                        Date
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[160px] md:min-w-[200px] bg-muted whitespace-nowrap">
+                        Ville
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted whitespace-nowrap">
+                        Produit
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[50px] md:min-w-[55px] bg-muted whitespace-nowrap">
+                        Nbr sac
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[60px] md:min-w-[65px] bg-muted whitespace-nowrap">
+                        Poids sac
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[90px] md:min-w-[110px] bg-muted whitespace-nowrap">
+                        Tonnage
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted whitespace-nowrap">
+                        N° camion
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted whitespace-nowrap">
+                        N° chauffeur
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[120px] md:min-w-[140px] bg-muted whitespace-nowrap">
+                        Poid arrivé
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xs md:text-sm text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted whitespace-nowrap">
+                        Poids manqué
+                      </th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xs md:text-sm text-card-foreground min-w-[120px] md:min-w-[140px] bg-muted whitespace-nowrap">
+                        Dépenses
+                      </th>
+                      <th className="px-0.5 py-2 text-center font-semibold text-xs md:text-sm text-card-foreground w-7 bg-muted whitespace-nowrap">
+                        #
+                      </th>
               </tr>
             </thead>
             <tbody>
@@ -1196,16 +1220,16 @@ export default function ChargementCamion() {
                         : "hover:bg-muted/20"
                     }`}
                   >
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                     <Input
                       type="text"
                       value={row.date_chargement ? convertDateToDisplay(row.date_chargement) : ""}
                       onChange={(e) => updateCell(row.id, "date_chargement", e.target.value)}
-                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground"
+                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xs md:text-sm font-medium text-foreground"
                       placeholder="jj/mm/aaaa"
                     />
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                     <div className="flex items-center gap-0">
                       <Input
                         type="text"
@@ -1220,59 +1244,59 @@ export default function ChargementCamion() {
                             }
                           }
                         }}
-                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground flex-1"
+                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xs md:text-sm font-medium text-foreground flex-1"
                       />
                       <span className="text-xs font-medium px-0">-</span>
                       <Input
                         type="text"
                         value={row.ville_arrivee || ""}
                         onChange={(e) => updateCell(row.id, "ville_arrivee", e.target.value)}
-                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground flex-1"
+                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xs md:text-sm font-medium text-foreground flex-1"
                       />
                     </div>
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                     <Input
                       type="text"
                       list="types-denree"
                       value={row.type_denree}
                       onChange={(e) => updateCell(row.id, "type_denree", e.target.value)}
-                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-xl font-medium text-foreground"
+                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xs md:text-sm font-medium text-foreground"
                     />
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                     <Input
                       type="number"
                       value={row.nombre_sacs || ""}
                       onChange={(e) => updateCell(row.id, "nombre_sacs", Number(e.target.value))}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-sm md:text-xl font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xs md:text-sm font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       min="0"
                     />
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                     <Input
                       type="number"
                       value={row.poids_par_sac || ""}
                       onChange={(e) => updateCell(row.id, "poids_par_sac", Number(e.target.value))}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-sm md:text-xl font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xs md:text-sm font-medium text-foreground [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                       min="0"
                       step="0.01"
                     />
                   </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl text-foreground bg-muted/20">
-                    <span className="block w-full text-right text-sm md:text-lg">
+                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xs md:text-sm text-foreground bg-muted/20 whitespace-nowrap align-middle">
+                    <span className="block w-full text-right text-xs md:text-sm">
                       {row.tonnage_total.toLocaleString()} <span className="text-xs md:text-base">kg</span>
                     </span>
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                           <Input
                             type="text"
                             value={row.numero_camion}
                             onChange={(e) => updateCell(row.id, "numero_camion", e.target.value)}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xs md:text-sm font-medium text-foreground"
                           />
                         </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                           <Input
                             type="text"
                             value={formatChauffeur(row.numero_chauffeur || "")}
@@ -1280,10 +1304,10 @@ export default function ChargementCamion() {
                               const cleaned = e.target.value.replace(/\s/g, '');
                               updateCell(row.id, "numero_chauffeur", cleaned);
                             }}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-base font-medium text-foreground"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xs md:text-sm font-medium text-foreground"
                           />
                         </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0 whitespace-nowrap align-middle">
                           <div className="flex items-center gap-0 px-1">
                             <Input
                               type="text"
@@ -1293,13 +1317,13 @@ export default function ChargementCamion() {
                                 const numValue = cleaned === "" ? null : Number(cleaned);
                                 updateCell(row.id, "poids_arrive", isNaN(numValue as number) ? null : numValue);
                               }}
-                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-sm md:text-lg font-medium text-foreground flex-1"
+                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xs md:text-sm font-medium text-foreground flex-1"
                             />
-                            <span className="text-xs md:text-base font-medium text-foreground">kg</span>
+                            <span className="text-xs md:text-sm font-medium text-foreground">kg</span>
                           </div>
                         </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl text-foreground bg-muted/20">
-                          <span className="block w-full text-right text-sm md:text-lg">
+                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xs md:text-sm text-foreground bg-muted/20 whitespace-nowrap align-middle">
+                          <span className="block w-full text-right text-xs md:text-sm">
                             {poidsManquantValue !== null && poidsManquantValue !== undefined 
                               ? (
                                 <>
@@ -1309,7 +1333,7 @@ export default function ChargementCamion() {
                               : "-"}
                           </span>
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl bg-muted/10">
+                  <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xs md:text-sm bg-muted/10 whitespace-nowrap align-middle">
                     <div className="flex items-center justify-end gap-0 w-full">
                       <Input
                         type="text"
@@ -1319,7 +1343,7 @@ export default function ChargementCamion() {
                           const numValue = cleaned === "" ? 0 : Number(cleaned);
                           updateCell(row.id, "depenses", isNaN(numValue) ? 0 : numValue);
                         }}
-                        className="border-0 rounded-none h-9 bg-transparent text-right text-sm md:text-lg w-full font-medium text-foreground"
+                        className="border-0 rounded-none h-9 bg-transparent text-right text-xs md:text-sm w-full font-medium text-foreground"
                       />
                       <span className="text-xs md:text-sm font-medium">F</span>
                     </div>

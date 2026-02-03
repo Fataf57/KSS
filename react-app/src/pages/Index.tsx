@@ -42,18 +42,32 @@ const Index = () => {
         </div>
 
         {/* Section contacts en haut à droite */}
-        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in min-w-[200px]">
+        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in min-w-[260px]">
           <h2 className="text-base font-semibold text-card-foreground flex items-center gap-2">
             <Phone className="w-5 h-5 text-accent" />
             <span>Contacts</span>
           </h2>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Téléphones
-            </p>
-            <div className="flex flex-col text-sm text-card-foreground space-y-1">
-              <span>TEL: 75 58 57 76</span>
-              <span>TEL: 78 92 63 41</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Mali à gauche */}
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Mali
+              </p>
+              <div className="flex flex-col text-sm text-card-foreground space-y-1">
+                <span>TEL: +223 73 73 73 44</span>
+                <span>TEL: +223 74 52 11 47</span>
+              </div>
+            </div>
+
+            {/* Burkina à droite */}
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Burkina Faso
+              </p>
+              <div className="flex flex-col text-sm text-card-foreground space-y-1">
+                <span>TEL: 75 58 57 76</span>
+                <span>TEL: 78 92 63 41</span>
+              </div>
             </div>
           </div>
         </div>
@@ -104,25 +118,6 @@ const Index = () => {
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Section Contacts Mali */}
-      <section className="mb-10">
-        <div className="bg-card rounded-xl border border-border p-6 space-y-4 animate-fade-in">
-          <h2 className="text-base font-semibold text-card-foreground flex items-center gap-2">
-            <Phone className="w-5 h-5 text-accent" />
-            <span>Contacts Mali</span>
-          </h2>
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Téléphones
-            </p>
-            <div className="flex flex-col text-sm text-card-foreground space-y-1">
-              <span>TEL: +223 73 73 73 44</span>
-              <span>TEL: +223 74 52 11 47</span>
-            </div>
           </div>
         </div>
       </section>

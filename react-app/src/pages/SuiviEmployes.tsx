@@ -649,34 +649,27 @@ export default function SuiviEmployes() {
         <div className="flex-shrink-0 mb-4">
           <PageHeader
             title={currentEmployee ? `Tableau de ${currentEmployee.full_name}` : "Tableau employe"}
-            description={currentEmployee ? "Remises et dépenses de cet employé" : "Sélectionnez un employé"}
             icon={Users}
             action={
               <div className="flex gap-2">
                 {currentEmployee && (
-                  <>
-                    <Button onClick={addRow} className="gap-2">
-                      <Plus size={16} />
-                      Nouvelle ligne
-                    </Button>
-                    <Button 
-                      onClick={handleSave} 
-                      className="gap-2 bg-green-600 hover:bg-green-700 text-white"
-                      disabled={isSaving || rows.filter(r => !r.isSaved).length === 0}
-                    >
-                      {isSaving ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                          Enregistrement...
-                        </>
-                      ) : (
-                        <>
-                          <Save size={16} />
-                          Enregistrer
-                        </>
-                      )}
-                    </Button>
-                  </>
+                  <Button 
+                    onClick={handleSave} 
+                    className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+                    disabled={isSaving || rows.filter(r => !r.isSaved).length === 0}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={16} />
+                        Enregistrer
+                      </>
+                    )}
+                  </Button>
                 )}
                 <Button 
                   variant="secondary" 
