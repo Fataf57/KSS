@@ -1164,8 +1164,8 @@ export default function ChargementCamion() {
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[85px] bg-muted">Nbr sac</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[60px] md:min-w-[65px] bg-muted">Poids sac</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[80px] md:min-w-[100px] bg-muted">Tonnage</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[90px] md:min-w-[110px] bg-muted">N° camion</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[90px] md:min-w-[110px] bg-muted">N° chauffeur</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° camion</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° chauffeur</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Poid arrivé</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Dépenses</th>
@@ -1264,7 +1264,7 @@ export default function ChargementCamion() {
                       {row.tonnage_total.toLocaleString()} <span className="text-xs md:text-base">kg</span>
                     </span>
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[120px] md:min-w-[150px]">
                           <Input
                             type="text"
                             value={row.numero_camion}
@@ -1272,7 +1272,7 @@ export default function ChargementCamion() {
                             className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground"
                           />
                         </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[120px] md:min-w-[150px]">
                           <Input
                             type="text"
                             value={formatChauffeur(row.numero_chauffeur || "")}
