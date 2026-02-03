@@ -642,12 +642,12 @@ export default function Achats() {
       // Créer les lignes de totaux avec labels et valeurs séparés pour un meilleur contrôle
       // Ligne 1 : Charge, Restant, Avance, Total, (vide), Total Net
       const totalsRow1 = [
-        `Charge: ${formatNumber(charge)} F`,
-        `Ancien Reste: ${formatNumber(restant)} F`,
-        `Avance: ${formatNumber(avance)} F`,
-        `Total : ${formatNumber(montantHt)} F`,
+        `Charge ${formatNumber(charge)}`,
+        `Ancien Reste ${formatNumber(restant)}`,
+        `Avance ${formatNumber(avance)}`,
+        `Total ${formatNumber(montantHt)}`,
         "",
-        `Total Net : ${formatNumber(montantNet)} F`
+        `Total ${formatNumber(montantNet)}`
       ];
       
       // Ligne 2 : (vide), (vide), (vide), (vide), Payé, Non payé
@@ -658,8 +658,8 @@ export default function Achats() {
         "",
         "",
         "",
-        `Payé: ${formatNumber(paye)} F`,
-        `Non payé : ${formatNumber(nonPaye)} F`
+        `Payé ${formatNumber(paye)}`,
+        `Non Payé ${formatNumber(nonPaye)}`
       ];
       
       // Utiliser autoTable pour les totaux avec les MÊMES largeurs de colonnes pour garantir l'alignement
@@ -668,14 +668,14 @@ export default function Achats() {
         body: [totalsRow1, totalsRow2],
         theme: "grid",
         bodyStyles: {
-          fontSize: 11,
+          fontSize: 9,
           cellPadding: 4,
           fillColor: [245, 245, 245], // Fond gris clair
           minCellHeight: 8,
           textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
         },
         styles: { 
-          fontSize: 11, 
+          fontSize: 9, 
           cellPadding: 4,
           overflow: 'linebreak',
           cellWidth: 'wrap',
@@ -684,12 +684,12 @@ export default function Achats() {
           textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
         },
         columnStyles: {
-          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
-          1: { cellWidth: colWidths[1], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
-          2: { cellWidth: colWidths[2], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
-          3: { cellWidth: colWidths[3], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 12, minCellHeight: 8, textColor: [0, 0, 0] },
-          4: { cellWidth: colWidths[4], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0] },
-          5: { cellWidth: colWidths[5], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 12, minCellHeight: 8, textColor: [0, 0, 0] },
+          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
+          1: { cellWidth: colWidths[1], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
+          2: { cellWidth: colWidths[2], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
+          3: { cellWidth: colWidths[3], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
+          4: { cellWidth: colWidths[4], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
+          5: { cellWidth: colWidths[5], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
         },
         margin: { left: margin, right: margin },
         tableWidth: tableWidth,
@@ -702,7 +702,7 @@ export default function Achats() {
           if (data.row.index === 0) {
             // Première ligne - fond gris pour toutes les cellules
             data.cell.styles.fillColor = [245, 245, 245];
-            data.cell.styles.fontSize = 11; // Taille augmentée pour meilleure lisibilité
+            data.cell.styles.fontSize = 9; // Taille réduite
             data.cell.styles.minCellHeight = 8;
             data.cell.styles.textColor = [0, 0, 0]; // Noir pur
             if (data.column.index === 3) {
@@ -717,7 +717,7 @@ export default function Achats() {
           } else if (data.row.index === 1) {
             // Deuxième ligne - fond gris pour toutes les cellules
             data.cell.styles.fillColor = [245, 245, 245];
-            data.cell.styles.fontSize = 11; // Taille augmentée pour meilleure lisibilité
+            data.cell.styles.fontSize = 9; // Taille réduite
             data.cell.styles.minCellHeight = 8;
             if (data.column.index === 5) {
               // Non payé - mettre en rouge si montant > 0
@@ -951,52 +951,49 @@ export default function Achats() {
                   <>
                     <tr className="border-t-2 border-gray-500 dark:border-gray-500 bg-muted/50">
                       <td className="px-3 py-2 text-right">
-                        <span className="text-lg font-medium">Charge: </span>
+                        <span className="text-sm font-medium">Charge </span>
                         <Input
                           type="number"
                           value={newEntree.charge === 0 ? "" : newEntree.charge}
                           onChange={(e) => setNewEntree({ ...newEntree, charge: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
                           step="0.01"
                           min="0"
-                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-lg mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                           disabled={isSaving}
                         />
-                        <span className="text-lg font-medium"> F</span>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className="text-lg font-medium">Ancien Reste: </span>
+                        <span className="text-sm font-medium">Ancien Reste </span>
                         <Input
                           type="number"
                           value={newEntree.restant === 0 ? "" : newEntree.restant}
                           onChange={(e) => setNewEntree({ ...newEntree, restant: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
                           step="0.01"
                           min="0"
-                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-lg mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                           disabled={isSaving}
                         />
-                        <span className="text-lg font-medium"> F</span>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className="text-lg font-medium">Avance: </span>
+                        <span className="text-sm font-medium">Avance </span>
                         <Input
                           type="number"
                           value={newEntree.avance === 0 ? "" : newEntree.avance}
                           onChange={(e) => setNewEntree({ ...newEntree, avance: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
                           step="0.01"
                           min="0"
-                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-lg mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                           disabled={isSaving}
                         />
-                        <span className="text-lg font-medium"> F</span>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <span className="font-bold text-lg text-foreground">
-                          Total : {formatNumber(calculateTotal())} F
+                        <span className="font-bold text-sm text-foreground">
+                          Total {formatNumber(calculateTotal())}
                         </span>
                       </td>
                       <td className="px-3 py-2"></td>
-                      <td className="px-3 py-2 text-right text-xl font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
-                        Total Net : {formatNumber(calculateTotalNet())} F
+                      <td className="px-3 py-2 text-right text-sm font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
+                        Total {formatNumber(calculateTotalNet())}
                       </td>
                     </tr>
                     <tr className="border-t border-gray-400 dark:border-gray-600 bg-muted/50">
@@ -1005,21 +1002,20 @@ export default function Achats() {
                       <td className="px-3 py-2"></td>
                       <td className="px-3 py-2"></td>
                       <td className="px-3 py-2 text-right">
-                        <span className="text-lg font-bold">Payé: </span>
+                        <span className="text-sm font-bold">Payé </span>
                         <Input
                           type="number"
                           value={newEntree.paye === 0 ? "" : newEntree.paye}
                           onChange={(e) => setNewEntree({ ...newEntree, paye: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
                           step="0.01"
                           min="0"
-                          className="inline-block w-32 h-9 border border-border rounded px-2 text-right font-bold text-lg mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          className="inline-block w-32 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
                           disabled={isSaving}
                         />
-                        <span className="text-lg font-medium"> F</span>
                       </td>
                       <td className="px-3 py-2 text-right bg-muted/20">
-                        <span className="font-bold text-lg text-foreground">
-                          Non payé : {formatNumber(calculateSommeRestante())} F
+                        <span className="font-bold text-sm text-foreground">
+                          Non Payé {formatNumber(calculateSommeRestante())}
                         </span>
                       </td>
                     </tr>
@@ -1181,22 +1177,22 @@ export default function Achats() {
                           <>
                             <tr className="border-t-2 border-gray-500 dark:border-gray-500 bg-muted/50">
                               <td className="px-3 py-2 text-right">
-                                <span className="text-lg font-medium">Charge: {formatNumber((entree as any).autres_charges || entree.charge || 0)} F</span>
+                                <span className="text-sm font-medium">Charge {formatNumber((entree as any).autres_charges || entree.charge || 0)}</span>
                               </td>
                               <td className="px-3 py-2 text-right">
-                                <span className="text-lg font-medium">Ancien Reste: {formatNumber((entree as any).restant || 0)} F</span>
+                                <span className="text-sm font-medium">Ancien Reste {formatNumber((entree as any).restant || 0)}</span>
                               </td>
                               <td className="px-3 py-2 text-right">
-                                <span className="text-lg font-medium">Avance: {formatNumber((entree as any).avance || 0)} F</span>
+                                <span className="text-sm font-medium">Avance {formatNumber((entree as any).avance || 0)}</span>
                               </td>
                               <td className="px-3 py-2 text-right">
-                                <span className="font-bold uppercase text-lg text-foreground">
-                                  Total : {formatNumber(entree.montant_ht || 0)} F
+                                <span className="font-bold uppercase text-sm text-foreground">
+                                  Total {formatNumber(entree.montant_ht || 0)}
                                 </span>
                               </td>
                               <td className="px-3 py-2"></td>
-                              <td className="px-3 py-2 text-right text-xl font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
-                                Total Net : {formatNumber(entree.montant_net || 0)} F
+                              <td className="px-3 py-2 text-right text-sm font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
+                                Total {formatNumber(entree.montant_net || 0)}
                               </td>
                             </tr>
                             <tr className="border-t border-gray-400 dark:border-gray-600 bg-muted/50">
@@ -1205,11 +1201,11 @@ export default function Achats() {
                               <td className="px-3 py-2"></td>
                               <td className="px-3 py-2"></td>
                               <td className="px-3 py-2 text-right">
-                                <span className="text-lg font-medium">Payé: {formatNumber((entree as any).paye || 0)} F</span>
+                                <span className="text-sm font-medium">Payé {formatNumber((entree as any).paye || 0)}</span>
                               </td>
                               <td className="px-3 py-2 text-right bg-muted/20">
-                                <span className="font-bold text-lg text-foreground">
-                                  Non payé : {formatNumber((entree.montant_net || 0) - ((entree as any).paye || 0))} F
+                                <span className="font-bold text-sm text-foreground">
+                                  Non Payé {formatNumber((entree.montant_net || 0) - ((entree as any).paye || 0))}
                                 </span>
                               </td>
                             </tr>
