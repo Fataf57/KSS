@@ -559,10 +559,10 @@ export default function EntreesStock() {
           ) : (
           <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in flex-1 flex flex-col min-h-0 h-full">
             <div className="overflow-auto flex-1 min-h-0 h-full pb-20">
-              <table className="w-full border-collapse">
+              <table className="w-full border-collapse min-w-[1400px]">
             <thead>
               <tr className="bg-muted sticky top-0 z-20">
-                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground w-[180px] bg-muted">Date</th>
+                <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[180px] bg-muted">Date</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Type</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[250px] bg-muted">Client</th>
                 <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[200px] bg-muted">Nom Produit</th>
@@ -590,12 +590,12 @@ export default function EntreesStock() {
                           : "hover:bg-muted/20"
                     }`}
                   >
-                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[180px]">
                     <Input
                       type="text"
                       value={row.isSaved ? formatDateDisplay(row.date) : row.date}
                       onChange={(e) => updateCell(row.id, "date", e.target.value)}
-                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground disabled:opacity-100 disabled:cursor-default"
+                      className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground disabled:opacity-100 disabled:cursor-default w-full"
                       disabled={row.isSaved}
                     />
                   </td>
