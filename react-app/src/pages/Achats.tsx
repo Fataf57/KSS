@@ -434,7 +434,7 @@ export default function Achats() {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 10; // Marges réduites pour plus d'espace
+      const margin = 5; // Marges très réduites pour occuper toute la feuille
       
       // En-tête avec logo et informations de l'entreprise
       const startY = margin;
@@ -640,56 +640,58 @@ export default function Achats() {
       const nonPaye = montantNet - paye;
       
       // Créer les lignes de totaux avec labels et valeurs séparés pour un meilleur contrôle
-      // Ligne 1 : Charge, Restant, Avance, Total, (vide), Total Net
+      // Ligne 1 : Charge, Ancien Reste (sous Nbr sac), valeur Ancien Reste (sous Poids sac), (vide), Avance, Total
       const totalsRow1 = [
         `Charge ${formatNumber(charge)}`,
-        `Ancien Reste ${formatNumber(restant)}`,
-        `Avance ${formatNumber(avance)}`,
-        `Total ${formatNumber(montantHt)}`,
+        `Ancien Reste`,
+        formatNumber(restant),
         "",
-        `Total ${formatNumber(montantNet)}`
+        `Avance ${formatNumber(avance)}`,
+        `Total ${formatNumber(montantHt)}`
       ];
       
-      // Ligne 2 : (vide), (vide), (vide), (vide), Payé, Non payé
+      // Ligne 2 : (vide), Total Net (sous Nbr sac), valeur Total Net (sous Poids sac), Payé, (vide), Non payé
       // Vérifier s'il y a un montant non payé pour le mettre en rouge
       const hasNonPaye = nonPaye > 0;
       const totalsRow2 = [
         "",
-        "",
-        "",
-        "",
+        `Total Net`,
+        formatNumber(montantNet),
         `Payé ${formatNumber(paye)}`,
+        "",
         `Non Payé ${formatNumber(nonPaye)}`
       ];
       
       // Utiliser autoTable pour les totaux avec les MÊMES largeurs de colonnes pour garantir l'alignement
+      // Pas de barres verticales entre les colonnes pour les deux dernières lignes
       autoTable(doc, {
         startY: finalY, // Collé directement au tableau des produits
         body: [totalsRow1, totalsRow2],
-        theme: "grid",
+        theme: "plain", // Pas de grille pour les barres verticales
         bodyStyles: {
-          fontSize: 9,
+          fontSize: 11,
           cellPadding: 4,
           fillColor: [245, 245, 245], // Fond gris clair
           minCellHeight: 8,
           textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
+          overflow: 'visible', // Pas de coupure de texte
         },
         styles: { 
-          fontSize: 9, 
+          fontSize: 11, 
           cellPadding: 4,
-          overflow: 'linebreak',
-          cellWidth: 'wrap',
+          overflow: 'visible', // Pas de coupure de texte
+          cellWidth: 'auto', // Largeur automatique
           fillColor: [245, 245, 245],
           minCellHeight: 8,
           textColor: [0, 0, 0], // Noir pur pour meilleure visibilité
         },
         columnStyles: {
-          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
-          1: { cellWidth: colWidths[1], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
-          2: { cellWidth: colWidths[2], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
-          3: { cellWidth: colWidths[3], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
-          4: { cellWidth: colWidths[4], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
-          5: { cellWidth: colWidths[5], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 9, minCellHeight: 8, textColor: [0, 0, 0] },
+          0: { cellWidth: colWidths[0], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0], overflow: 'visible' },
+          1: { cellWidth: colWidths[1], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0], overflow: 'visible', cellPadding: { left: 4, right: 1, top: 4, bottom: 4 } },
+          2: { cellWidth: colWidths[2], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0], overflow: 'visible', cellPadding: { left: 1, right: 4, top: 4, bottom: 4 } },
+          3: { cellWidth: colWidths[3], halign: 'right', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0], overflow: 'visible' },
+          4: { cellWidth: colWidths[4], halign: 'left', valign: 'middle', fontStyle: 'normal', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0], overflow: 'visible' },
+          5: { cellWidth: colWidths[5], halign: 'left', valign: 'middle', fontStyle: 'bold', fontSize: 11, minCellHeight: 8, textColor: [0, 0, 0], overflow: 'visible' },
         },
         margin: { left: margin, right: margin },
         tableWidth: tableWidth,
@@ -698,18 +700,35 @@ export default function Achats() {
         pageBreak: 'avoid',
         rowPageBreak: 'avoid',
         didParseCell: (data: any) => {
+          // Désactiver toutes les lignes verticales (right et left)
+          data.cell.styles.lineColor = [255, 255, 255]; // Blanc pour masquer les lignes verticales
+          // Forcer le texte à rester sur une seule ligne
+          data.cell.styles.overflow = 'visible';
+          
           // Appliquer les styles spécifiques pour chaque cellule
           if (data.row.index === 0) {
             // Première ligne - fond gris pour toutes les cellules
             data.cell.styles.fillColor = [245, 245, 245];
-            data.cell.styles.fontSize = 9; // Taille réduite
+            data.cell.styles.fontSize = 11; // Taille augmentée
             data.cell.styles.minCellHeight = 8;
             data.cell.styles.textColor = [0, 0, 0]; // Noir pur
-            if (data.column.index === 3) {
-              // Total
-              data.cell.styles.fontStyle = 'bold';
+            // Ligne horizontale en haut seulement (épaisse pour la première ligne)
+            if (data.column.index === 0) {
+              data.cell.styles.lineWidth = 0.5;
+            } else {
+              data.cell.styles.lineWidth = 0;
+            }
+            if (data.column.index === 1) {
+              // Ancien Reste - titre
+              data.cell.styles.fontStyle = 'normal';
+              data.cell.styles.cellPadding = { left: 4, right: 1, top: 4, bottom: 4 };
+            } else if (data.column.index === 2) {
+              // Valeur Ancien Reste
+              data.cell.styles.fontStyle = 'normal';
+              data.cell.styles.halign = 'left';
+              data.cell.styles.cellPadding = { left: 1, right: 4, top: 4, bottom: 4 };
             } else if (data.column.index === 5) {
-              // Total Net
+              // Total
               data.cell.styles.fontStyle = 'bold';
             } else {
               data.cell.styles.fontStyle = 'normal';
@@ -717,9 +736,22 @@ export default function Achats() {
           } else if (data.row.index === 1) {
             // Deuxième ligne - fond gris pour toutes les cellules
             data.cell.styles.fillColor = [245, 245, 245];
-            data.cell.styles.fontSize = 9; // Taille réduite
+            data.cell.styles.fontSize = 11; // Taille augmentée
             data.cell.styles.minCellHeight = 8;
-            if (data.column.index === 5) {
+            // Pas de ligne en haut car elle sera dessinée manuellement
+            data.cell.styles.lineWidth = 0;
+            if (data.column.index === 1) {
+              // Total Net - titre
+              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.textColor = [0, 0, 0]; // Noir
+              data.cell.styles.cellPadding = { left: 4, right: 1, top: 4, bottom: 4 };
+            } else if (data.column.index === 2) {
+              // Valeur Total Net
+              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.textColor = [0, 0, 0]; // Noir
+              data.cell.styles.halign = 'left';
+              data.cell.styles.cellPadding = { left: 1, right: 4, top: 4, bottom: 4 };
+            } else if (data.column.index === 5) {
               // Non payé - mettre en rouge si montant > 0
               data.cell.styles.fontStyle = 'bold';
               if (hasNonPaye) {
@@ -731,6 +763,17 @@ export default function Achats() {
               data.cell.styles.fontStyle = 'normal';
               data.cell.styles.textColor = [0, 0, 0]; // Noir pur
             }
+          }
+        },
+        didDrawCell: (data: any) => {
+          // Dessiner une ligne de séparation après la première ligne
+          if (data.row.index === 0 && data.column.index === 5) {
+            // Dessiner la ligne après la dernière cellule de la première ligne
+            const cell = data.cell;
+            const y = cell.y + cell.height;
+            doc.setDrawColor(0, 0, 0);
+            doc.setLineWidth(0.5);
+            doc.line(margin, y, pageWidth - margin, y);
           }
         },
       });
@@ -801,6 +844,26 @@ export default function Achats() {
     
     const decimalPart = parts[1].replace(/0+$/, '');
     return decimalPart ? integerPart + ',' + decimalPart : integerPart;
+  };
+
+  const formatInputNumber = (value: number | string): string => {
+    if (value === 0 || value === "" || value === null || value === undefined) return "";
+    const valueStr = String(value).replace(/\s/g, ''); // Enlever les espaces existants
+    const parts = valueStr.split('.');
+    const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    
+    if (parts.length === 1) {
+      return integerPart;
+    }
+    
+    return integerPart + '.' + parts[1];
+  };
+
+  const parseInputNumber = (value: string): number => {
+    if (!value || value.trim() === "") return 0;
+    const cleaned = value.replace(/\s/g, ''); // Enlever tous les espaces
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
   };
 
   const getClientName = (entree: EntreeAchat): string => {
@@ -914,13 +977,15 @@ export default function Achats() {
                       </td>
                       <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[130px]">
                         <Input
-                          type="number"
-                          value={ligne.prix_unitaire === 0 ? "" : ligne.prix_unitaire}
-                          onChange={(e) => handleUpdateLigne(index, "prix_unitaire", e.target.value === "" ? "" : parseFloat(e.target.value) || 0)}
-                          className="h-9 border-0 rounded-none bg-transparent focus:bg-accent/10 text-right text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                          step="0.01"
-                          min="0"
+                          type="text"
+                          value={formatInputNumber(ligne.prix_unitaire)}
+                          onChange={(e) => {
+                            const parsed = parseInputNumber(e.target.value);
+                            handleUpdateLigne(index, "prix_unitaire", parsed);
+                          }}
+                          className="h-9 border-0 rounded-none bg-transparent focus:bg-accent/10 text-right text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default"
                           disabled={isSaving}
+                          placeholder="0"
                         />
                       </td>
                       <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-1 text-right font-medium text-xl text-foreground min-w-[150px] bg-muted/20">
@@ -953,71 +1018,86 @@ export default function Achats() {
                       <td className="px-3 py-2 text-right">
                         <span className="text-sm font-medium">Charge </span>
                         <Input
-                          type="number"
-                          value={newEntree.charge === 0 ? "" : newEntree.charge}
-                          onChange={(e) => setNewEntree({ ...newEntree, charge: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
-                          step="0.01"
-                          min="0"
-                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          type="text"
+                          value={formatInputNumber(newEntree.charge)}
+                          onChange={(e) => {
+                            const parsed = parseInputNumber(e.target.value);
+                            setNewEntree({ ...newEntree, charge: parsed });
+                          }}
+                          className="inline-block w-36 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2"
                           disabled={isSaving}
+                          placeholder="0"
                         />
                       </td>
+                      <td className="px-3 py-2"></td>
                       <td className="px-3 py-2 text-right">
                         <span className="text-sm font-medium">Ancien Reste </span>
                         <Input
-                          type="number"
-                          value={newEntree.restant === 0 ? "" : newEntree.restant}
-                          onChange={(e) => setNewEntree({ ...newEntree, restant: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
-                          step="0.01"
-                          min="0"
-                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          type="text"
+                          value={formatInputNumber(newEntree.restant)}
+                          onChange={(e) => {
+                            const parsed = parseInputNumber(e.target.value);
+                            setNewEntree({ ...newEntree, restant: parsed });
+                          }}
+                          className="inline-block w-36 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2"
                           disabled={isSaving}
+                          placeholder="0"
                         />
                       </td>
+                      <td className="px-3 py-2"></td>
                       <td className="px-3 py-2 text-right">
                         <span className="text-sm font-medium">Avance </span>
                         <Input
-                          type="number"
-                          value={newEntree.avance === 0 ? "" : newEntree.avance}
-                          onChange={(e) => setNewEntree({ ...newEntree, avance: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
-                          step="0.01"
-                          min="0"
-                          className="inline-block w-28 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                          type="text"
+                          value={formatInputNumber(newEntree.avance)}
+                          onChange={(e) => {
+                            const parsed = parseInputNumber(e.target.value);
+                            setNewEntree({ ...newEntree, avance: parsed });
+                          }}
+                          className="inline-block w-36 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2"
                           disabled={isSaving}
+                          placeholder="0"
                         />
                       </td>
-                      <td className="px-3 py-2 text-right">
+                      <td className="px-3 py-2 text-right bg-muted/20">
                         <span className="font-bold text-sm text-foreground">
                           Total {formatNumber(calculateTotal())}
                         </span>
                       </td>
                       <td className="px-3 py-2"></td>
-                      <td className="px-3 py-2 text-right text-sm font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
-                        Total {formatNumber(calculateTotalNet())}
-                      </td>
                     </tr>
                     <tr className="border-t border-gray-400 dark:border-gray-600 bg-muted/50">
                       <td className="px-3 py-2"></td>
-                      <td className="px-3 py-2"></td>
-                      <td className="px-3 py-2"></td>
-                      <td className="px-3 py-2"></td>
-                      <td className="px-3 py-2 text-right">
-                        <span className="text-sm font-bold">Payé </span>
-                        <Input
-                          type="number"
-                          value={newEntree.paye === 0 ? "" : newEntree.paye}
-                          onChange={(e) => setNewEntree({ ...newEntree, paye: e.target.value === "" ? 0 : parseFloat(e.target.value) || 0 })}
-                          step="0.01"
-                          min="0"
-                          className="inline-block w-32 h-9 border border-border rounded px-2 text-right font-bold text-sm mx-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-                          disabled={isSaving}
-                        />
+                      <td className="px-3 py-2 text-right text-sm font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
+                        Total Net {formatNumber(calculateTotalNet())}
                       </td>
+                      <td className="px-3 py-2"></td>
                       <td className="px-3 py-2 text-right bg-muted/20">
-                        <span className="font-bold text-sm text-foreground">
-                          Non Payé {formatNumber(calculateSommeRestante())}
-                        </span>
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="text-sm font-bold">Payé</span>
+                          <Input
+                            type="text"
+                            value={formatInputNumber(newEntree.paye)}
+                            onChange={(e) => {
+                              const parsed = parseInputNumber(e.target.value);
+                              setNewEntree({ ...newEntree, paye: parsed });
+                            }}
+                            className="w-32 h-9 border border-border rounded px-2 text-right font-bold text-sm"
+                            disabled={isSaving}
+                            placeholder="0"
+                          />
+                        </div>
                       </td>
+                      <td className="px-3 py-2"></td>
+                      <td className="px-3 py-2 text-right bg-muted/20">
+                        <div className="flex items-center justify-end gap-2">
+                          <span className="font-bold text-sm text-foreground">Non Payé</span>
+                          <span className="font-bold text-sm text-foreground">
+                            {formatNumber(calculateSommeRestante())}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2"></td>
                     </tr>
                   </>
                 )}
@@ -1042,7 +1122,7 @@ export default function Achats() {
               >
                 Annuler
               </Button>
-              <Button onClick={handleAddEntree} disabled={isSaving} className="gap-2">
+              <Button onClick={handleAddEntree} disabled={isSaving} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
                 {isSaving ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
@@ -1051,7 +1131,7 @@ export default function Achats() {
                 ) : (
                   <>
                     <Save size={16} />
-                    Valider
+                    Enregistrer
                   </>
                 )}
               </Button>
@@ -1111,6 +1191,14 @@ export default function Achats() {
                             >
                               <Download size={16} />
                               PDF
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleDeleteClick(entree.id!)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 size={16} />
                             </Button>
                           </div>
                         </div>
@@ -1179,34 +1267,40 @@ export default function Achats() {
                               <td className="px-3 py-2 text-right">
                                 <span className="text-sm font-medium">Charge {formatNumber((entree as any).autres_charges || entree.charge || 0)}</span>
                               </td>
+                              <td className="px-3 py-2"></td>
                               <td className="px-3 py-2 text-right">
                                 <span className="text-sm font-medium">Ancien Reste {formatNumber((entree as any).restant || 0)}</span>
                               </td>
+                              <td className="px-3 py-2"></td>
                               <td className="px-3 py-2 text-right">
                                 <span className="text-sm font-medium">Avance {formatNumber((entree as any).avance || 0)}</span>
                               </td>
-                              <td className="px-3 py-2 text-right">
+                              <td className="px-3 py-2 text-right bg-muted/20">
                                 <span className="font-bold uppercase text-sm text-foreground">
                                   Total {formatNumber(entree.montant_ht || 0)}
                                 </span>
                               </td>
-                              <td className="px-3 py-2"></td>
-                              <td className="px-3 py-2 text-right text-sm font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
-                                Total {formatNumber(entree.montant_net || 0)}
-                              </td>
                             </tr>
                             <tr className="border-t border-gray-400 dark:border-gray-600 bg-muted/50">
                               <td className="px-3 py-2"></td>
-                              <td className="px-3 py-2"></td>
-                              <td className="px-3 py-2"></td>
-                              <td className="px-3 py-2"></td>
-                              <td className="px-3 py-2 text-right">
-                                <span className="text-sm font-medium">Payé {formatNumber((entree as any).paye || 0)}</span>
+                              <td className="px-3 py-2 text-right text-sm font-extrabold whitespace-nowrap text-black dark:text-white bg-muted/20">
+                                Total Net {formatNumber(entree.montant_net || 0)}
                               </td>
+                              <td className="px-3 py-2"></td>
                               <td className="px-3 py-2 text-right bg-muted/20">
-                                <span className="font-bold text-sm text-foreground">
-                                  Non Payé {formatNumber((entree.montant_net || 0) - ((entree as any).paye || 0))}
-                                </span>
+                                <div className="flex items-center justify-end gap-2">
+                                  <span className="text-sm font-bold">Payé</span>
+                                  <span className="text-sm font-bold">{formatNumber((entree as any).paye || 0)}</span>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2"></td>
+                              <td className="px-3 py-2 text-right bg-muted/20">
+                                <div className="flex items-center justify-end gap-2">
+                                  <span className="font-bold text-sm text-foreground">Non Payé</span>
+                                  <span className="font-bold text-sm text-foreground">
+                                    {formatNumber((entree.montant_net || 0) - ((entree as any).paye || 0))}
+                                  </span>
+                                </div>
                               </td>
                             </tr>
                           </>

@@ -415,7 +415,14 @@ export default function DetailStock() {
       </Dialog>
       {/* Bouton flottant pour aller au tableau d'ajout (entrées/sorties de stock) */}
       <Button
-        onClick={() => navigate("/entrees-stock")}
+        onClick={() => {
+          // Si on est sur le magasin Mali (code "3"), passer le paramètre magasin
+          if (selectedMagasin === "3") {
+            navigate("/entrees-stock?magasin=3");
+          } else {
+            navigate("/entrees-stock");
+          }
+        }}
         className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg gap-2 z-50"
         size="icon"
       >

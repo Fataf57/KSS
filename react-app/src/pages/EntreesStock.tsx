@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
 
@@ -83,6 +83,10 @@ export default function EntreesStock() {
   const [rowToDelete, setRowToDelete] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const magasinParam = searchParams.get("magasin");
+  // Mode Mali uniquement : si le paramètre magasin=3 est présent
+  const isMaliOnly = magasinParam === "3";
 
   // Charger l'historique depuis l'API
   const fetchHistory = async () => {
@@ -109,13 +113,18 @@ export default function EntreesStock() {
       // Ne garder dans l'historique que les opérations "actives" :
       //  - on enlève les lignes d'annulation
       //  - on enlève aussi les opérations d'origine qui ont été annulées
-      const visibleData = data.filter((entry: any) => {
+      let visibleData = data.filter((entry: any) => {
         const isCancellation =
           typeof entry.notes === "string" &&
           entry.notes.startsWith("Annulation de l'opération #");
         const isCancelledOriginal = cancelledOriginalIds.has(entry.id);
         return !isCancellation && !isCancelledOriginal;
       });
+
+      // Si on est en mode Mali uniquement, filtrer pour ne garder que le magasin 3
+      if (isMaliOnly) {
+        visibleData = visibleData.filter((entry: any) => entry.numero_magasin === "3");
+      }
 
       // Convertir les données de l'API en format EntreeStockRow
       // Utiliser des IDs négatifs pour l'historique pour éviter les conflits avec les nouvelles lignes
@@ -145,7 +154,14 @@ export default function EntreesStock() {
               ...r,
               type_operation: r.type_operation || 'entree' as 'entree' | 'sortie'
             }))
-            .filter((r: EntreeStockRow) => !r.isSaved); // Ne garder que les lignes non Enregistrées
+            .filter((r: EntreeStockRow) => !r.isSaved) // Ne garder que les lignes non Enregistrées
+            .filter((r: EntreeStockRow) => {
+              // En mode Mali uniquement, ne garder que les lignes du magasin 3
+              if (isMaliOnly) {
+                return r.numero_magasin === "3";
+              }
+              return true;
+            });
           
           // Calculer le prochain ID (seulement basé sur les lignes non Enregistrées car l'historique utilise des IDs négatifs)
           const maxId = unsavedRows.length > 0 
@@ -169,10 +185,18 @@ export default function EntreesStock() {
     if (savedRows) {
       try {
         const parsedRows = JSON.parse(savedRows);
-          const rowsWithType = parsedRows.map((r: EntreeStockRow) => ({
-            ...r,
-            type_operation: r.type_operation || 'entree' as 'entree' | 'sortie'
-          }));
+          const rowsWithType = parsedRows
+            .map((r: EntreeStockRow) => ({
+              ...r,
+              type_operation: r.type_operation || 'entree' as 'entree' | 'sortie'
+            }))
+            .filter((r: EntreeStockRow) => {
+              // En mode Mali uniquement, ne garder que les lignes du magasin 3
+              if (isMaliOnly) {
+                return r.numero_magasin === "3";
+              }
+              return true;
+            });
           setRows(rowsWithType);
           const maxId = rowsWithType.length > 0 
             ? Math.max(...rowsWithType.map((r: EntreeStockRow) => r.id))
@@ -203,13 +227,18 @@ export default function EntreesStock() {
 
   // Enregistrer dans localStorage seulement les lignes non Enregistrées
   useEffect(() => {
-    const unsavedRows = rows.filter(r => !r.isSaved);
+    let unsavedRows = rows.filter(r => !r.isSaved);
+    // En mode Mali uniquement, ne sauvegarder dans localStorage que les lignes du magasin 3
+    // (même si normalement toutes les nouvelles lignes devraient déjà avoir le magasin 3)
+    if (isMaliOnly) {
+      unsavedRows = unsavedRows.filter(r => r.numero_magasin === "3");
+    }
     if (unsavedRows.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(unsavedRows));
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
-  }, [rows]);
+  }, [rows, isMaliOnly]);
 
   const updateCell = (id: number, field: keyof EntreeStockRow, value: string | number) => {
     setRows(prevRows => prevRows.map(row => {
@@ -235,7 +264,7 @@ export default function EntreesStock() {
       nombre_sacs: 0,
       poids_par_sac: 0,
       tonnage_total: 0,
-      numero_magasin: "2",
+      numero_magasin: isMaliOnly ? "3" : "2", // Fixer à "3" si mode Mali uniquement
       isSaved: false,
     };
     setRows([...rows, newRow]);
@@ -501,8 +530,8 @@ export default function EntreesStock() {
       <div className="flex flex-col h-full">
         <div className="flex-shrink-0 mb-4">
           <PageHeader
-            title="Magasin"
-            description=""
+            title={isMaliOnly ? "Magasin - Mali" : "Magasin"}
+            description={isMaliOnly ? "Enregistrement des stocks pour le magasin Mali uniquement" : ""}
             icon={Package}
             action={
               <div className="flex gap-2">
@@ -669,20 +698,27 @@ export default function EntreesStock() {
                     </span>
                   </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 p-0">
-                    <Select
-                      value={row.numero_magasin}
-                      onValueChange={(value) => updateCell(row.id, "numero_magasin", value)}
-                      disabled={row.isSaved}
-                    >
-                      <SelectTrigger className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default" disabled={row.isSaved}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Djaradougou</SelectItem>
-                        <SelectItem value="2">Ouezzin-ville</SelectItem>
-                        <SelectItem value="3">Bamako</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    {isMaliOnly ? (
+                      // En mode Mali uniquement, afficher le nom du magasin en lecture seule
+                      <div className="px-2 py-2 text-xl font-medium text-foreground">
+                        Mali
+                      </div>
+                    ) : (
+                      <Select
+                        value={row.numero_magasin}
+                        onValueChange={(value) => updateCell(row.id, "numero_magasin", value)}
+                        disabled={row.isSaved}
+                      >
+                        <SelectTrigger className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default" disabled={row.isSaved}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Djaradougou</SelectItem>
+                          <SelectItem value="2">Ouezzin-ville</SelectItem>
+                          <SelectItem value="3">Bamako</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
                   </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-center">
                     <div className="flex items-center justify-center gap-1">
