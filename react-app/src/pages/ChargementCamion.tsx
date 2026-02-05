@@ -625,9 +625,9 @@ export default function ChargementCamion() {
       // En-tête avec logo et informations de l'entreprise
       const startY = margin;
       
-      // Logo au centre
-      const logoHeight = 25;
-      const logoWidth = 35;
+      // Logo au centre (réduit)
+      const logoHeight = 18;
+      const logoWidth = 25;
       const logoX = (pageWidth - logoWidth) / 2;
       try {
         const logoResponse = await fetch('/ksslogo.jpeg');
@@ -642,59 +642,59 @@ export default function ChargementCamion() {
       }
       
       // Ligne 1 gauche : Première partie du nom de l'entreprise
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
       const leftText1a = "ETABLISSEMENT KADER SAWADOGO";
-      doc.text(leftText1a, margin, startY + 5);
+      doc.text(leftText1a, margin, startY + 4);
       
       // Ligne 1 droite : BURKINA FASSO
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       const rightText1a = "BURKINA FASSO";
       const rightText1aWidth = doc.getTextWidth(rightText1a);
-      doc.text(rightText1a, pageWidth - margin - rightText1aWidth, startY + 5);
+      doc.text(rightText1a, pageWidth - margin - rightText1aWidth, startY + 4);
       
       // Ligne 2 gauche : Deuxième partie du nom de l'entreprise
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
       const leftText1b = "ET FRERE";
-      doc.text(leftText1b, margin, startY + 11);
+      doc.text(leftText1b, margin, startY + 9);
       
       // Ligne 2 droite : LA PATRIE OU LA MORT
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       const rightText1b = "LA PATRIE OU LA MORT";
       const rightText1bWidth = doc.getTextWidth(rightText1b);
-      doc.text(rightText1b, pageWidth - margin - rightText1bWidth, startY + 11);
+      doc.text(rightText1b, pageWidth - margin - rightText1bWidth, startY + 9);
       
       // Ligne 3 droite : NOUS VAINCRONS
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       const rightText1c = "NOUS VAINCRONS";
       const rightText1cWidth = doc.getTextWidth(rightText1c);
-      doc.text(rightText1c, pageWidth - margin - rightText1cWidth, startY + 17);
+      doc.text(rightText1c, pageWidth - margin - rightText1cWidth, startY + 14);
       
       // Ligne 4 gauche : Tel BF (espacé du nom de l'entreprise)
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       const telTextBF = "Tel BF    : +226 75 58 57 76 | 76 54 71 71";
-      doc.text(telTextBF, margin, startY + 15);
+      doc.text(telTextBF, margin, startY + 13);
       
       // Ligne 5 gauche : Tel Mali (collé au Tel BF)
       const telTextMali = "Tel Mali : +223 73 73 73 44 | 74 52 11 47";
-      doc.text(telTextMali, margin, startY + 21);
+      doc.text(telTextMali, margin, startY + 18);
       
       // Ligne de séparation
-      const separatorY = startY + 27;
+      const separatorY = startY + 22;
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.5);
       doc.line(margin, separatorY, pageWidth - margin, separatorY);
       
       // Titre du document
-      doc.setFontSize(16);
+      doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0); // Noir pur
-      const titleY = separatorY + 8;
+      const titleY = separatorY + 5;
       doc.text("Document de Chargement", pageWidth / 2, titleY, { align: "center" });
       
       // Formater les valeurs comme dans le tableau de l'interface
@@ -726,6 +726,10 @@ export default function ChargementCamion() {
           ? Math.max(0, row.tonnage_total - Number(row.poids_arrive))
           : null);
       
+      const totalTransfort = row.benefices || 0;
+      const transportDonne = row.depenses || 0;
+      const restant = Math.max(0, totalTransfort - transportDonne);
+      
       // Tableau vertical sans header, juste les données
       const tableData = [
         ["Date Chargement", formatDateForPDF(row.date_chargement)],
@@ -740,20 +744,30 @@ export default function ChargementCamion() {
         ["Poids manqué", poidsManquantValue !== null && poidsManquantValue !== undefined && poidsManquantValue > 0
           ? `${formatNumber(poidsManquantValue)} kg`
           : ""],
-        ["Dépenses", row.depenses && row.depenses > 0 ? (() => {
-          let formatted = formatNumberWithSpaces(row.depenses);
+        ["Total Transfort", totalTransfort > 0 ? (() => {
+          let formatted = formatNumberWithSpaces(totalTransfort);
           formatted = formatted.replace(/\.00$/, '');
           return formatted + " F";
         })() : ""],
+        ["Donné", transportDonne > 0 ? (() => {
+          let formatted = formatNumberWithSpaces(transportDonne);
+          formatted = formatted.replace(/\.00$/, '');
+          return formatted + " F";
+        })() : ""],
+        ["Restant", restant > 0 ? (() => {
+          let formatted = formatNumberWithSpaces(restant);
+          formatted = formatted.replace(/\.00$/, '');
+          return formatted + " F";
+        })() : "0 F"],
       ];
       
       autoTable(doc, {
-        startY: titleY + 10,
+        startY: titleY + 5,
         body: tableData,
         theme: "grid",
         styles: { 
           fontSize: 12, 
-          cellPadding: 6, 
+          cellPadding: 5, 
           lineColor: [0, 0, 0], 
           lineWidth: 0.5,
           textColor: [0, 0, 0],
@@ -762,39 +776,42 @@ export default function ChargementCamion() {
         },
         columnStyles: {
           0: { 
-            cellWidth: 70, 
+            cellWidth: 85, 
             halign: 'left', 
             fontStyle: 'bold', 
-            cellPadding: 6,
+            cellPadding: 5,
             textColor: [0, 0, 0],
-            font: 'helvetica'
+            font: 'helvetica',
+            fontSize: 12
           },  // Noms des colonnes
           1: { 
             halign: 'left', 
-            cellPadding: 6,
+            cellPadding: 5,
             textColor: [0, 0, 0],
             font: 'helvetica',
-            fontStyle: 'bold'
+            fontStyle: 'bold',
+            fontSize: 12
           },                                    // Valeurs
         },
-        margin: { left: margin, right: margin },
+        margin: { left: margin, right: margin, bottom: 20 },
         tableWidth: 'auto',
-        didDrawPage: () => {
-          // Pied de page - s'assurer qu'il est toujours visible
-          const footerY = pageHeight - 20;
-          doc.setFontSize(11); // Augmentation de la taille de police de la date
-          doc.setFont("helvetica", "normal");
-          const today = new Date().toLocaleDateString('fr-FR');
-          const leftFooter = `Bobo Dioulasso le ${today}`;
-          doc.text(leftFooter, margin, footerY);
-          
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(13); // Augmentation de la taille de police
-          const rightFooter = "SIGNATURE DU PDG DE KSS";
-          const rightFooterWidth = doc.getTextWidth(rightFooter);
-          doc.text(rightFooter, pageWidth - margin - rightFooterWidth, footerY);
-        },
       });
+      
+      // Dessiner le pied de page après le tableau avec un espacement approprié
+      const tableEndY = (doc as any).lastAutoTable?.finalY || titleY + 5;
+      const footerY = Math.min(tableEndY + 10, pageHeight - 15);
+      
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      const today = new Date().toLocaleDateString('fr-FR');
+      const leftFooter = `Bobo Dioulasso le ${today}`;
+      doc.text(leftFooter, margin, footerY);
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      const rightFooter = "SIGNATURE DU PDG DE KSS";
+      const rightFooterWidth = doc.getTextWidth(rightFooter);
+      doc.text(rightFooter, pageWidth - margin - rightFooterWidth, footerY);
       
       // Nom du fichier
       const fileName = `Chargement_Camion_${row.date_chargement || "N-A"}_${row.numero_camion || "N-A"}.pdf`;
