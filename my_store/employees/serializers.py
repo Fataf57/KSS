@@ -1,19 +1,39 @@
 from rest_framework import serializers
 from .models import Employee, EmployeeExpense
+from account.models import User
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(read_only=True)
     nom_prenom = serializers.CharField(write_only=True, required=True, allow_blank=False)
+    allowed_users = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=User.objects.all(),
+        required=False,
+        allow_null=True
+    )
 
     class Meta:
         model = Employee
         fields = [
-            'id', 'first_name', 'last_name', 'full_name', 'nom_prenom', 'email',
-            'phone', 'address', 'city', 'postal_code', 'country',
-            'created_at', 'updated_at'
+            'id',
+            'first_name',
+            'last_name',
+            'full_name',
+            'nom_prenom',
+            'email',
+            'phone',
+            'address',
+            'city',
+            'postal_code',
+            'country',
+            'is_private',
+            'allowed_users',
+            'created_by',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ['created_at', 'updated_at', 'first_name', 'last_name']
+        read_only_fields = ['created_at', 'updated_at', 'first_name', 'last_name', 'created_by']
         extra_kwargs = {
             'email': {'required': False, 'allow_blank': True, 'allow_null': True},
         }
@@ -58,7 +78,7 @@ class EmployeeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ['id', 'full_name', 'email', 'phone', 'city']
+        fields = ['id', 'full_name', 'email', 'phone', 'city', 'is_private']
 
 
 class EmployeeExpenseSerializer(serializers.ModelSerializer):

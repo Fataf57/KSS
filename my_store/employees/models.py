@@ -12,6 +12,24 @@ class Employee(models.Model):
     city = models.CharField(max_length=100, blank=True)
     postal_code = models.CharField(max_length=20, blank=True)
     country = models.CharField(max_length=100, blank=True)
+    # Gestion des tableaux privés par employé
+    is_private = models.BooleanField(
+        default=False,
+        help_text="Si coché, le tableau de cet employé est visible uniquement par certains utilisateurs."
+    )
+    allowed_users = models.ManyToManyField(
+        User,
+        blank=True,
+        related_name="employees_with_access",
+        help_text="Utilisateurs autorisés à voir ce tableau lorsque celui-ci est privé."
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="employees_created",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

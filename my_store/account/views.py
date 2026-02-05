@@ -9,6 +9,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .models import User
+from .serializers import UserSerializer
+
 
 class LoginView(APIView):
     """
@@ -125,3 +128,16 @@ class DashboardStatsView(APIView):
                 {'error': str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class UserListView(APIView):
+    """
+    Liste simple des utilisateurs pour configurer les accès aux tableaux privés.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = User.objects.all().order_by("username")
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)

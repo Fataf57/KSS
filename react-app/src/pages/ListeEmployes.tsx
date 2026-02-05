@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { Users, Plus, Loader2, Trash2, ArrowLeft } from "lucide-react";
+import { Users, Plus, Loader2, Trash2, ArrowLeft, Lock, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,16 +19,24 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Employee {
   id: number;
-  first_name: string;
-  last_name: string;
+  first_name?: string;
+  last_name?: string;
   full_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  is_private?: boolean;
+}
+
+interface UserOption {
+  id: number;
+  username: string;
+  email?: string;
 }
 
 export default function ListeEmployes() {
@@ -39,28 +47,75 @@ export default function ListeEmployes() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [users, setUsers] = useState<UserOption[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { token, user } = useAuth();
 
   // Formulaire pour nouvel employé
   const [newEmployee, setNewEmployee] = useState({
     nom_prenom: "",
+    is_private: false,
+    allowed_users: [] as number[],
   });
 
   const fetchEmployees = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(getApiUrl("employees/"));
+      const response = await fetch(getApiUrl("employees/"), {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
       if (response.ok) {
         const data = await response.json();
-        setEmployees(data);
+        // S'assurer que les données sont un tableau
+        if (Array.isArray(data)) {
+          setEmployees(data);
+        } else {
+          console.error("Les données reçues ne sont pas un tableau:", data);
+          setEmployees([]);
+          toast({
+            title: "Avertissement",
+            description: "Format de données inattendu reçu du serveur",
+            variant: "destructive",
+          });
+        }
       } else {
-        throw new Error("Erreur lors du chargement des employés");
+        let errorMessage = "Erreur lors du chargement des employés";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+          
+          // Gérer les erreurs spécifiques
+          if (response.status === 401) {
+            errorMessage = "Vous n'êtes pas authentifié. Veuillez vous reconnecter.";
+          } else if (response.status === 403) {
+            errorMessage = "Vous n'avez pas la permission d'accéder à cette ressource.";
+          } else if (response.status === 404) {
+            errorMessage = "L'endpoint des employés est introuvable.";
+          } else if (response.status >= 500) {
+            errorMessage = "Erreur serveur. Veuillez réessayer plus tard.";
+          }
+        } catch (e) {
+          errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
+      let errorMessage = "Impossible de charger les employés";
+      
+      if (error.message && error.message.includes("Failed to fetch")) {
+        errorMessage = "Impossible de se connecter au serveur. Vérifiez que le serveur Django est lancé.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erreur",
-        description: error.message || "Impossible de charger les employés",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -68,9 +123,41 @@ export default function ListeEmployes() {
     }
   };
 
+  const fetchUsers = async () => {
+    if (!token) return;
+    setIsLoadingUsers(true);
+    try {
+      const response = await fetch(getApiUrl("account/users/"), {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Ne pas proposer l'utilisateur courant dans la liste : 
+        // il aura déjà accès au tableau en tant que créateur.
+        const filtered = user ? data.filter((u: UserOption) => u.id !== user.id) : data;
+        setUsers(filtered);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des utilisateurs:", error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  // Charger la liste des employés au montage et quand le token change
   useEffect(() => {
     fetchEmployees();
-  }, []);
+  }, [token]);
+
+  // Charger la liste des utilisateurs dès que le token est disponible
+  useEffect(() => {
+    if (token) {
+      fetchUsers();
+    }
+  }, [token]);
 
   const handleAddEmployee = async () => {
     if (!newEmployee.nom_prenom.trim()) {
@@ -88,6 +175,7 @@ export default function ListeEmployes() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(newEmployee),
       });
@@ -132,6 +220,8 @@ export default function ListeEmployes() {
       // Réinitialiser le formulaire
       setNewEmployee({
         nom_prenom: "",
+        is_private: false,
+        allowed_users: [],
       });
 
       setIsDialogOpen(false);
@@ -170,6 +260,7 @@ export default function ListeEmployes() {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
 
@@ -262,10 +353,18 @@ export default function ListeEmployes() {
               className="bg-card rounded-xl border border-border p-6 hover:border-accent transition-colors cursor-pointer"
               onClick={() => navigate(`/suivi-employes/${employee.id}`)}
             >
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-card-foreground">
-                  {employee.full_name}
-                </h3>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-card-foreground">
+                    {employee.full_name}
+                  </h3>
+                  {employee.is_private && (
+                    <div className="flex items-center gap-1 text-amber-600">
+                      <Lock className="h-4 w-4" />
+                      <span className="text-sm font-medium">privé</span>
+                    </div>
+                  )}
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -320,7 +419,7 @@ export default function ListeEmployes() {
             <Plus size={24} />
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <DialogTitle>Nouvel Employé</DialogTitle>
           </DialogHeader>
@@ -339,6 +438,73 @@ export default function ListeEmployes() {
                 }}
               />
             </div>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <input
+                  id="is_private"
+                  type="checkbox"
+                  checked={newEmployee.is_private}
+                  onChange={(e) =>
+                    setNewEmployee({
+                      ...newEmployee,
+                      is_private: e.target.checked,
+                      // Si on décoche privé, on vide la liste des utilisateurs autorisés
+                      allowed_users: e.target.checked ? newEmployee.allowed_users : [],
+                    })
+                  }
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="is_private" className="flex items-center gap-1">
+                  {newEmployee.is_private ? (
+                    <Lock className="h-4 w-4 text-amber-600" />
+                  ) : (
+                    <Unlock className="h-4 w-4 text-emerald-600" />
+                  )}
+                  <span>Tableau privé</span>
+                </Label>
+              </div>
+            </div>
+            {newEmployee.is_private && (
+              <div className="grid gap-2">
+                <Label htmlFor="allowed_users">Utilisateurs autorisés à voir ce tableau</Label>
+                <div className="border rounded-md p-2 max-h-40 overflow-auto space-y-1">
+                  {isLoadingUsers && (
+                    <div className="text-sm text-muted-foreground">Chargement des utilisateurs...</div>
+                  )}
+                  {!isLoadingUsers && users.length === 0 && (
+                    <div className="text-sm text-muted-foreground">
+                      Aucun utilisateur disponible.
+                    </div>
+                  )}
+                  {!isLoadingUsers &&
+                    users.map((user) => (
+                      <label
+                        key={user.id}
+                        className="flex items-center gap-2 text-sm cursor-pointer hover:bg-muted px-1 py-0.5 rounded"
+                      >
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4"
+                          checked={newEmployee.allowed_users.includes(user.id)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setNewEmployee((prev) => ({
+                              ...prev,
+                              allowed_users: checked
+                                ? [...prev.allowed_users, user.id]
+                                : prev.allowed_users.filter((id) => id !== user.id),
+                            }));
+                          }}
+                        />
+                        <span className="font-medium">{user.username}</span>
+                        {user.email && (
+                          <span className="text-xs text-muted-foreground">({user.email})</span>
+                        )}
+                      </label>
+                    ))}
+                </div>
+              </div>
+            )}
             <Button onClick={handleAddEmployee} disabled={isSaving} className="gap-2">
               {isSaving ? (
                 <>
@@ -358,4 +524,5 @@ export default function ListeEmployes() {
     </DashboardLayout>
   );
 }
+
 

@@ -37,6 +37,7 @@ interface ChargementRow {
   poids_arrive: number | null;
   poids_manquant: number | null;
   depenses: number;
+  benefices: number;
   isSaved?: boolean;
   savedId?: number;
 }
@@ -180,6 +181,9 @@ export default function ChargementCamion() {
   const [savingRowId, setSavingRowId] = useState<number | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<number | null>(null);
+  const [transportDialogOpen, setTransportDialogOpen] = useState(false);
+  const [transportRowId, setTransportRowId] = useState<number | null>(null);
+  const [transportAmount, setTransportAmount] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -221,6 +225,7 @@ export default function ChargementCamion() {
           poids_arrive: poidsArrive,
           poids_manquant: poidsManquant,
           depenses: entry.depenses || 0,
+          benefices: entry.benefices || 0,
           isSaved: true,
           savedId: entry.id,
         };
@@ -289,6 +294,25 @@ export default function ChargementCamion() {
       localStorage.removeItem(STORAGE_KEY);
     }
   }, [rows]);
+
+  // Fermer le modal de transport quand on clique en dehors
+  useEffect(() => {
+    if (!transportDialogOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.transport-modal-container')) {
+        setTransportDialogOpen(false);
+        setTransportAmount("");
+        setTransportRowId(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [transportDialogOpen]);
 
   const [updatingRowId, setUpdatingRowId] = useState<number | null>(null);
 
@@ -361,6 +385,7 @@ export default function ChargementCamion() {
       poids_arrive: null,
       poids_manquant: null,
       depenses: 0,
+      benefices: 0,
       isSaved: false,
     };
     setRows([...rows, newRow]);
@@ -458,6 +483,40 @@ export default function ChargementCamion() {
     }
   };
 
+  const handleOpenTransportDialog = (rowId: number) => {
+    setTransportRowId(rowId);
+    setTransportAmount("");
+    setTransportDialogOpen(true);
+  };
+
+  const handleConfirmTransportAdd = () => {
+    if (transportRowId === null) return;
+
+    const cleaned = transportAmount.replace(/\s/g, "").replace(",", ".");
+    const numValue = cleaned === "" ? NaN : Number(cleaned);
+
+    if (isNaN(numValue) || numValue <= 0) {
+      toast({
+        title: "Montant invalide",
+        description: "Veuillez saisir un montant strictement positif pour le donné.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRows(prevRows =>
+      prevRows.map(row =>
+        row.id === transportRowId
+          ? { ...row, depenses: (row.depenses || 0) + numValue }
+          : row
+      )
+    );
+
+    setTransportDialogOpen(false);
+    setTransportRowId(null);
+    setTransportAmount("");
+  };
+
   const validateRow = (row: ChargementRow): string | null => {
     // Permettre l'enregistrement si la ligne est complètement vide
     const isRowEmpty = !row.date_chargement && !row.type_denree?.trim() && 
@@ -502,6 +561,7 @@ export default function ChargementCamion() {
         date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
         poids_arrive: row.poids_arrive || null,
         depenses: row.depenses || 0,
+        benefices: row.benefices || 0,
       };
 
       const response = await fetch(getApiUrl(`camion-chargements/${row.savedId}/`), {
@@ -783,6 +843,8 @@ export default function ChargementCamion() {
         numero_chauffeur: row.numero_chauffeur || "",
         date_arrivee: row.date_arrivee || null,
         poids_arrive: row.poids_arrive || null,
+        depenses: row.depenses || 0,
+        benefices: row.benefices || 0,
         numero_magasin: "1",
         stock_items: [],
       };
@@ -897,6 +959,7 @@ export default function ChargementCamion() {
           date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
           poids_arrive: row.poids_arrive || null,
           depenses: row.depenses || 0,
+          benefices: row.benefices || 0,
           numero_magasin: "1",
           stock_items: [],
         };
@@ -951,6 +1014,7 @@ export default function ChargementCamion() {
           date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
           poids_arrive: row.poids_arrive || null,
           depenses: row.depenses || 0,
+          benefices: row.benefices || 0,
         };
 
         const response = await fetch(getApiUrl(`camion-chargements/${row.savedId}/`), {
@@ -1137,17 +1201,19 @@ export default function ChargementCamion() {
                 <table className="w-full border-collapse">
             <thead>
                     <tr className="bg-muted sticky top-0 z-20">
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[110px] md:min-w-[130px] bg-muted">Date</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[170px] md:min-w-[200px] bg-muted">Ville</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Produit</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[85px] bg-muted">Nbr sac</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[60px] md:min-w-[65px] bg-muted">Poids sac</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[80px] md:min-w-[100px] bg-muted">Tonnage</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° camion</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° chauffeur</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Poid arrivé</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Dépenses</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[110px] md:min-w-[130px] bg-muted">Date</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[170px] md:min-w-[200px] bg-muted">Ville</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Produit</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[85px] bg-muted">Nbr sac</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[60px] md:min-w-[65px] bg-muted">Poids sac</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[80px] md:min-w-[100px] bg-muted">Tonnage</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° camion</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° chauffeur</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Poid arrivé</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Total Transfort</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Donné</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Restant</th>
                       <th className="px-0.5 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground w-7 bg-muted">#</th>
               </tr>
             </thead>
@@ -1162,6 +1228,9 @@ export default function ChargementCamion() {
                         }
                       }
                       const hasPoidsManquant = poidsManquantValue !== null && poidsManquantValue !== undefined && poidsManquantValue > 0;
+                      const totalTransfort = row.benefices || 0;
+                      const transportDonne = row.depenses || 0;
+                      const restant = Math.max(0, totalTransfort - transportDonne);
                 
                 return (
                   <tr 
@@ -1288,21 +1357,107 @@ export default function ChargementCamion() {
                               : "-"}
                           </span>
                   </td>
-                  <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl bg-muted/10">
-                    <div className="flex items-center justify-end gap-0 w-full">
-                      <Input
-                        type="text"
-                        value={row.depenses && row.depenses > 0 ? formatNumberWithSpaces(row.depenses) : ""}
-                        onChange={(e) => {
-                          const cleaned = e.target.value.replace(/\s/g, '').replace(',', '.');
-                          const numValue = cleaned === "" ? 0 : Number(cleaned);
-                          updateCell(row.id, "depenses", isNaN(numValue) ? 0 : numValue);
-                        }}
-                        className="border-0 rounded-none h-9 bg-transparent text-right text-sm md:text-lg w-full font-medium text-foreground"
-                      />
-                      <span className="text-xs md:text-sm font-medium">F</span>
-                    </div>
-                  </td>
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[120px] md:min-w-[150px]">
+                          <div className="flex items-center justify-end gap-0 w-full">
+                            <Input
+                              type="text"
+                              value={row.benefices && row.benefices > 0 ? formatNumberWithSpaces(row.benefices) : ""}
+                              onChange={(e) => {
+                                const cleaned = e.target.value.replace(/\s/g, '').replace(',', '.');
+                                const numValue = cleaned === "" ? 0 : Number(cleaned);
+                                updateCell(row.id, "benefices", isNaN(numValue) ? 0 : numValue);
+                              }}
+                              className="border-0 rounded-none h-9 bg-transparent text-right text-sm md:text-lg w-full font-medium text-foreground"
+                            />
+                            <span className="text-xs md:text-sm font-medium">F</span>
+                          </div>
+                        </td>
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[120px] md:min-w-[150px] relative">
+                          <div className="flex items-center justify-end gap-1 w-full">
+                            <Input
+                              type="text"
+                              value={row.depenses && row.depenses > 0 ? formatNumberWithSpaces(row.depenses) : ""}
+                              onChange={(e) => {
+                                const cleaned = e.target.value.replace(/\s/g, '').replace(',', '.');
+                                const numValue = cleaned === "" ? 0 : Number(cleaned);
+                                updateCell(row.id, "depenses", isNaN(numValue) ? 0 : numValue);
+                              }}
+                              className="border-0 rounded-none h-9 bg-transparent text-right text-sm md:text-lg w-full font-medium text-foreground"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10"
+                              onClick={() => handleOpenTransportDialog(row.id)}
+                              title="Ajouter un donné"
+                            >
+                              <Plus size={14} />
+                            </Button>
+                          </div>
+                          {transportDialogOpen && transportRowId === row.id && (
+                            <div className="transport-modal-container absolute bottom-full right-0 mb-2 z-50 bg-card border border-border rounded-lg shadow-lg p-3 w-64">
+                              <div className="text-sm font-semibold mb-2">Ajouter du donné</div>
+                              <Input
+                                type="text"
+                                value={transportAmount}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  // Nettoyer les espaces et virgules pour le traitement
+                                  const cleaned = value.replace(/\s/g, '').replace(',', '.');
+                                  // Vérifier si c'est un nombre valide ou vide
+                                  if (cleaned === '' || !isNaN(Number(cleaned))) {
+                                    // Formater avec des espaces tous les 3 chiffres
+                                    const numValue = cleaned === '' ? '' : Number(cleaned);
+                                    if (cleaned === '') {
+                                      setTransportAmount('');
+                                    } else {
+                                      setTransportAmount(formatNumberWithSpaces(numValue));
+                                    }
+                                  }
+                                }}
+                                className="h-9 mb-2"
+                                placeholder="Montant (F CFA)"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleConfirmTransportAdd();
+                                  } else if (e.key === 'Escape') {
+                                    setTransportDialogOpen(false);
+                                    setTransportAmount("");
+                                    setTransportRowId(null);
+                                  }
+                                }}
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setTransportDialogOpen(false);
+                                    setTransportAmount("");
+                                    setTransportRowId(null);
+                                  }}
+                                >
+                                  Annuler
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={handleConfirmTransportAdd}
+                                >
+                                  Ajouter
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl text-foreground bg-muted/10 min-w-[120px] md:min-w-[150px]">
+                          <span className="block w-full text-right text-sm md:text-lg">
+                            {restant > 0 ? `${formatNumberWithSpaces(restant)} F` : "0 F"}
+                          </span>
+                        </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <Button

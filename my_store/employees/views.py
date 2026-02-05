@@ -1,10 +1,15 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from django.db.models import Q
+
 from .models import Employee, EmployeeExpense
 from .serializers import (
-    EmployeeSerializer, EmployeeListSerializer,
-    EmployeeExpenseSerializer, EmployeeExpenseCreateSerializer, EmployeeExpenseListSerializer
+    EmployeeSerializer,
+    EmployeeListSerializer,
+    EmployeeExpenseSerializer,
+    EmployeeExpenseCreateSerializer,
+    EmployeeExpenseListSerializer,
 )
 
 
@@ -18,19 +23,51 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return EmployeeSerializer
 
     def get_queryset(self):
+        """
+        Restreint la liste des employés visibles en fonction des règles de confidentialité :
+        - Tous voient les employés non privés.
+        - Un employé privé est visible par :
+          * son créateur,
+          * les utilisateurs présents dans allowed_users,
+          * un superutilisateur.
+        """
         queryset = Employee.objects.all()
-        search = self.request.query_params.get('search', None)
+        user = getattr(self.request, "user", None)
+
+        # Filtre de recherche
+        search = self.request.query_params.get("search", None)
 
         if search:
             queryset = queryset.filter(
-                first_name__icontains=search
-            ) | queryset.filter(
-                last_name__icontains=search
-            ) | queryset.filter(
-                email__icontains=search
+                Q(first_name__icontains=search)
+                | Q(last_name__icontains=search)
+                | Q(email__icontains=search)
             )
 
+        # Gestion de la confidentialité
+        visibility_filter = Q(is_private=False)
+
+        if user and user.is_authenticated:
+            # Un employé privé est visible par son créateur ou les utilisateurs autorisés
+            visibility_filter |= Q(is_private=True, created_by=user) | Q(
+                is_private=True, allowed_users__id=user.id
+            )
+            if user.is_superuser:
+                # Un superuser voit tout
+                visibility_filter = Q()
+
+        queryset = queryset.filter(visibility_filter).distinct()
         return queryset
+
+    def perform_create(self, serializer):
+        """
+        Lors de la création d'un employé, associer automatiquement le créateur.
+        """
+        user = getattr(self.request, "user", None)
+        if user and user.is_authenticated:
+            serializer.save(created_by=user)
+        else:
+            serializer.save()
 
     def destroy(self, request, *args, **kwargs):
         """Gestion personnalisée de la suppression avec meilleure gestion d'erreurs"""

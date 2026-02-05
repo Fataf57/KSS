@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EmployeeExpenseRow {
   id: number;
@@ -136,13 +137,19 @@ export default function SuiviEmployes() {
   const [rowToDelete, setRowToDelete] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { token } = useAuth();
 
   // Charger les employés depuis l'API
   useEffect(() => {
     setIsLoadingEmployees(true);
     const fetchEmployees = async () => {
       try {
-        const response = await fetch(getApiUrl("employees/"));
+        const response = await fetch(getApiUrl("employees/"), {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
         if (response.ok) {
           const data = await response.json();
           setEmployees(data);
@@ -181,7 +188,7 @@ export default function SuiviEmployes() {
       }
     };
     fetchEmployees();
-  }, [employeeId, navigate, toast]);
+  }, [employeeId, navigate, toast, token]);
 
   // Charger les dépenses depuis l'API et localStorage
   useEffect(() => {
