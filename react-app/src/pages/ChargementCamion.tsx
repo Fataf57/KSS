@@ -1033,27 +1033,6 @@ export default function ChargementCamion() {
       });
 
       window.dispatchEvent(new Event('stock-updated'));
-      
-      const newRow: ChargementRow = {
-        id: nextId,
-        date_chargement: new Date().toISOString().split('T')[0],
-        ville_depart: "",
-        ville_arrivee: "",
-        ville: "",
-        type_denree: "",
-        nombre_sacs: 0,
-        poids_par_sac: 0,
-        tonnage_total: 0,
-        numero_camion: "",
-        numero_chauffeur: "",
-        date_arrivee: "",
-        poids_arrive: null,
-        poids_manquant: null,
-        depenses: 0,
-        isSaved: false,
-      };
-      setRows(prevRows => [...prevRows, newRow]);
-      setNextId(nextId + 1);
     } catch (error: any) {
       toast({
         title: "Erreur",
