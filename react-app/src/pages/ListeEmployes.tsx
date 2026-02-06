@@ -84,20 +84,15 @@ export default function ListeEmployes() {
           });
         }
       } else {
-        // Gérer les erreurs 401 (non authentifié) - rediriger vers login
-        if (response.status === 401) {
-          logout();
-          navigate("/login");
-          return;
-        }
-        
         let errorMessage = "Erreur lors du chargement des employés";
         try {
           const errorData = await response.json();
           errorMessage = errorData.detail || errorData.message || errorMessage;
           
           // Gérer les autres erreurs spécifiques
-          if (response.status === 403) {
+          if (response.status === 401) {
+            errorMessage = "Erreur d'authentification pour les employés. Vérifiez vos droits ou reconnectez-vous.";
+          } else if (response.status === 403) {
             errorMessage = "Vous n'avez pas la permission d'accéder à cette ressource.";
           } else if (response.status === 404) {
             errorMessage = "L'endpoint des employés est introuvable.";
@@ -110,11 +105,6 @@ export default function ListeEmployes() {
         throw new Error(errorMessage);
       }
     } catch (error: any) {
-      // Ne pas afficher d'erreur si c'est une erreur 401 (déjà gérée)
-      if (error.message && error.message.includes("401")) {
-        return;
-      }
-      
       let errorMessage = "Impossible de charger les employés";
       
       if (error.message && error.message.includes("Failed to fetch")) {
@@ -149,13 +139,38 @@ export default function ListeEmployes() {
         // il aura déjà accès au tableau en tant que créateur.
         const filtered = user ? data.filter((u: UserOption) => u.id !== user.id) : data;
         setUsers(filtered);
-      } else if (response.status === 401) {
-        // Gérer les erreurs 401 (non authentifié) - rediriger vers login
-        logout();
-        navigate("/login");
+      } else {
+        let errorMessage = "Erreur lors du chargement des utilisateurs";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch (e) {
+          errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        }
+
+        if (response.status === 401) {
+          errorMessage = "Erreur d'authentification lors du chargement des utilisateurs. Vérifiez vos droits ou reconnectez-vous.";
+        }
+
+        toast({
+          title: "Erreur",
+          description: errorMessage,
+          variant: "destructive",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors du chargement des utilisateurs:", error);
+      let errorMessage = "Impossible de charger les utilisateurs";
+      if (error.message && error.message.includes("Failed to fetch")) {
+        errorMessage = "Impossible de se connecter au serveur. Vérifiez que le serveur Django est lancé.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      toast({
+        title: "Erreur",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingUsers(false);
     }
@@ -195,13 +210,6 @@ export default function ListeEmployes() {
       });
 
       if (!response.ok) {
-        // Gérer les erreurs 401 (non authentifié) - rediriger vers login
-        if (response.status === 401) {
-          logout();
-          navigate("/login");
-          return;
-        }
-        
         let errorMessage = "Erreur lors de la création";
         try {
           const errorData = await response.json();
@@ -230,6 +238,10 @@ export default function ListeEmployes() {
         } catch (e) {
           errorMessage = `Erreur ${response.status}: ${response.statusText}`;
         }
+        // Ajouter un message plus explicite pour les erreurs 401 sans déconnexion automatique
+        if (response.status === 401) {
+          errorMessage = "Erreur d'authentification lors de la création de l'employé. Vérifiez vos droits ou reconnectez-vous.";
+        }
         throw new Error(errorMessage);
       }
 
@@ -248,11 +260,6 @@ export default function ListeEmployes() {
       setIsDialogOpen(false);
       fetchEmployees(); // Recharger la liste
     } catch (error: any) {
-      // Ne pas afficher d'erreur si c'est une erreur 401 (déjà gérée)
-      if (error.message && error.message.includes("401")) {
-        return;
-      }
-      
       let errorMessage = "Impossible d'ajouter l'employé";
       
       if (error.message && error.message.includes("Failed to fetch")) {
@@ -291,13 +298,6 @@ export default function ListeEmployes() {
       });
 
       if (!response.ok) {
-        // Gérer les erreurs 401 (non authentifié) - rediriger vers login
-        if (response.status === 401) {
-          logout();
-          navigate("/login");
-          return;
-        }
-        
         let errorMessage = "Erreur lors de la suppression";
         try {
           const errorData = await response.json();
@@ -309,6 +309,10 @@ export default function ListeEmployes() {
           }
         } catch (e) {
           errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+        }
+        // Ajouter un message plus explicite pour les erreurs 401 sans déconnexion automatique
+        if (response.status === 401) {
+          errorMessage = "Erreur d'authentification lors de la suppression de l'employé. Vérifiez vos droits ou reconnectez-vous.";
         }
         throw new Error(errorMessage);
       }
@@ -322,11 +326,6 @@ export default function ListeEmployes() {
       setEmployeeToDelete(null);
       fetchEmployees(); // Recharger la liste
     } catch (error: any) {
-      // Ne pas afficher d'erreur si c'est une erreur 401 (déjà gérée)
-      if (error.message && error.message.includes("401")) {
-        return;
-      }
-      
       let errorMessage = "Impossible de supprimer l'employé";
       
       if (error.message && error.message.includes("Failed to fetch")) {

@@ -145,6 +145,8 @@ const formatDateDisplay = (dateString: string): string => {
 export default function SuiviClients() {
   const { clientId } = useParams<{ clientId: string }>();
   const [rows, setRows] = useState<ClientChargementRow[]>([]);
+  // État temporaire pour la saisie texte du poids (permet d'écrire 79,05 sans perdre la virgule)
+  const [poidsInputs, setPoidsInputs] = useState<Record<number, string>>({});
   const [nextId, setNextId] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [savingRowId, setSavingRowId] = useState<number | null>(null);
@@ -1103,11 +1105,39 @@ export default function SuiviClients() {
                           <div className="flex items-center justify-end">
                             <Input
                               type="text"
-                              value={row.poids !== null && row.poids !== undefined ? formatNumber(row.poids) : ""}
+                              value={
+                                poidsInputs[row.id] !== undefined
+                                  ? poidsInputs[row.id]
+                                  : row.poids !== null && row.poids !== undefined
+                                    ? formatNumber(row.poids)
+                                    : ""
+                              }
                               onChange={(e) => {
-                                const cleaned = e.target.value.replace(/\s/g, "").replace(",", ".");
-                                const num = cleaned === "" ? null : Number(cleaned);
-                                updateCell(row.id, "poids", isNaN(num as number) ? null : num);
+                                const raw = e.target.value;
+                                // Mémoriser exactement ce que tape l'utilisateur (avec virgule)
+                                setPoidsInputs((prev) => ({
+                                  ...prev,
+                                  [row.id]: raw,
+                                }));
+
+                                const cleaned = raw.replace(/\s/g, "").replace(",", ".");
+
+                                if (cleaned === "") {
+                                  updateCell(row.id, "poids", null);
+                                  return;
+                                }
+
+                                const num = Number(cleaned);
+                                if (!isNaN(num)) {
+                                  updateCell(row.id, "poids", num);
+                                }
+                              }}
+                              onBlur={() => {
+                                // À la sortie du champ, revenir à l'affichage formaté standard
+                                setPoidsInputs((prev) => {
+                                  const { [row.id]: _omit, ...rest } = prev;
+                                  return rest;
+                                });
                               }}
                               className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default flex-1"
                               placeholder="0"

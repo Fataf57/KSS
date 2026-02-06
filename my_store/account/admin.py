@@ -14,7 +14,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = User
-        fields = ('username', 'is_active', 'is_staff', 'is_superuser')
+        fields = ('username', 'role', 'is_active', 'is_staff', 'is_superuser')
 
 
 @admin.register(User)
@@ -22,12 +22,12 @@ class UserAdmin(BaseUserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = User
-    list_display = ('id', 'username', 'is_staff', 'is_superuser')
-    list_filter = ('is_staff', 'is_superuser', 'is_active')
+    list_display = ('id', 'username', 'role', 'is_staff', 'is_superuser')
+    list_filter = ('role', 'is_staff', 'is_superuser', 'is_active')
     ordering = ('username',)
     search_fields = ('username',)
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
+        (None, {'fields': ('username', 'password', 'role')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Dates importantes', {'fields': ('last_login', 'date_joined')}),
     )

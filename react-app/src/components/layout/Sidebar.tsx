@@ -1,4 +1,4 @@
-import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, ShoppingCart, Receipt, LogOut, RefreshCw } from "lucide-react";
+import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, ShoppingCart, Receipt, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +14,7 @@ const navItems = [
   { title: "Tableau employe", url: "/liste-employes", icon: Briefcase },
   { title: "Achats", url: "/achats", icon: ShoppingCart },
   { title: "Dépenses", url: "/depenses", icon: Receipt },
-  { title: "Reload", url: "/reload", icon: RefreshCw },
+  { title: "Argent", url: "/argent", icon: Receipt },
 ];
 
 export function Sidebar() {
@@ -78,7 +78,13 @@ export function Sidebar() {
             </div>
             <div className="flex flex-col min-w-0 hidden lg:flex">
               <p className="text-xs font-medium truncate">{user?.username || "KSS"}</p>
-              <p className="text-xs text-sidebar-muted truncate">Profil</p>
+              <p className="text-xs text-sidebar-muted truncate">
+                {user?.role === "boss"
+                  ? "Boss"
+                  : user?.role === "agent"
+                  ? "Agent"
+                  : "Profil"}
+              </p>
             </div>
           </div>
           <Button

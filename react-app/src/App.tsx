@@ -16,8 +16,8 @@ import SuiviEmployes from "./pages/SuiviEmployes";
 import ListeEmployes from "./pages/ListeEmployes";
 import Achats from "./pages/Achats";
 import Depenses from "./pages/Depenses";
+import Argent from "./pages/Argent";
 import NotFound from "./pages/NotFound";
-import Reload from "./pages/Reload";
 
 const queryClient = new QueryClient();
 
@@ -127,10 +127,10 @@ const App = () => (
               }
             />
             <Route
-              path="/reload"
+              path="/argent"
               element={
                 <ProtectedRoute>
-                  <Reload />
+                  <Argent />
                 </ProtectedRoute>
               }
             />

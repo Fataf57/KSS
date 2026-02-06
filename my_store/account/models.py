@@ -38,8 +38,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     Modèle utilisateur minimaliste avec uniquement username + mot de passe.
     """
 
+    ROLE_AGENT = "agent"
+    ROLE_BOSS = "boss"
+
+    ROLE_CHOICES = [
+        (ROLE_AGENT, "Agent"),
+        (ROLE_BOSS, "Boss"),
+    ]
+
     username = models.CharField(max_length=150, unique=True)
     email = models.EmailField(blank=True, null=True)
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default=ROLE_AGENT,
+        help_text="Profil de l'utilisateur (agent ou boss).",
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)

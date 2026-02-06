@@ -34,7 +34,6 @@ class LoginView(APIView):
                 {'detail': "Identifiants invalides."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
         refresh = RefreshToken.for_user(user)
         return Response(
             {
@@ -44,6 +43,7 @@ class LoginView(APIView):
                     'id': user.id,
                     'username': user.username,
                     'email': user.email if hasattr(user, 'email') else None,
+                    'role': getattr(user, 'role', None),
                 },
             }
         )
@@ -59,8 +59,9 @@ class ProfileView(APIView):
         return Response(
             {
                 'id': user.id,
-                'username': user.username,
-                'email': user.email if hasattr(user, 'email') else None,
+                'username': getattr(user, 'username', None),
+                'email': getattr(user, 'email', None) if hasattr(user, 'email') else None,
+                'role': getattr(user, 'role', None),
             }
         )
 
