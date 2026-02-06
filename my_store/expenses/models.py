@@ -60,3 +60,36 @@ class PeriodStop(models.Model):
         verbose_name = "Arrêt de compte"
         verbose_name_plural = "Arrêts de compte"
         ordering = ['stop_index']
+
+
+class ArgentEntry(models.Model):
+    """
+    Entrée d'argent saisie par un agent et visible par le boss.
+    Ce modèle permet de synchroniser les données entre tous les appareils
+    (ordinateur, téléphone, etc.).
+    """
+    date = models.DateField(verbose_name="Date")
+    nom = models.CharField(max_length=255, verbose_name="Nom")
+    lieu_retrait = models.CharField(max_length=255, verbose_name="Lieu de retrait")
+    somme = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name="Somme",
+        help_text="Montant de l'entrée d'argent"
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='argent_entries_created'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.date.strftime('%d/%m/%Y')} - {self.nom} - {self.somme} FCFA"
+
+    class Meta:
+        verbose_name = "Entrée d'argent"
+        verbose_name_plural = "Entrées d'argent"
+        ordering = ['-date', '-created_at']

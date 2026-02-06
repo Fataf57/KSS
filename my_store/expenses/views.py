@@ -14,13 +14,15 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
-from .models import Depense, PeriodStop
+from .models import Depense, PeriodStop, ArgentEntry
 from .serializers import (
     DepenseSerializer,
     DepenseCreateSerializer,
     DepenseListSerializer,
     PeriodStopSerializer,
-    PeriodStopCreateSerializer
+    PeriodStopCreateSerializer,
+    ArgentEntrySerializer,
+    ArgentEntryCreateSerializer,
 )
 
 
@@ -331,3 +333,38 @@ class PeriodStopViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class ArgentEntryViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet pour gérer les entrées d'argent.
+    Utilisé par l'onglet \"Argent\" du frontend.
+    """
+    queryset = ArgentEntry.objects.all()
+    permission_classes = [AllowAny]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return ArgentEntryCreateSerializer
+        return ArgentEntrySerializer
+
+    def get_queryset(self):
+        queryset = ArgentEntry.objects.all()
+
+        # Filtres simples (par date si besoin à l'avenir)
+        date_from = self.request.query_params.get('date_from')
+        date_to = self.request.query_params.get('date_to')
+
+        if date_from:
+            queryset = queryset.filter(date__gte=date_from)
+        if date_to:
+            queryset = queryset.filter(date__lte=date_to)
+
+        return queryset.order_by('-date', '-created_at')
+
+    def perform_create(self, serializer):
+        # Associer l'utilisateur si connecté (agent ou boss)
+        if self.request.user and self.request.user.is_authenticated:
+            serializer.save(created_by=self.request.user)
+        else:
+            serializer.save(created_by=None)

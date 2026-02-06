@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { getApiUrl } from "@/config/api";
 
 interface ArgentRow {
   id: number;
@@ -25,8 +26,6 @@ interface ArgentRow {
   lieu_retrait: string;
   somme: number | null;
 }
-
-const STORAGE_KEY = "argent_rows";
 
 const getTodayDate = (): string => {
   const today = new Date();
@@ -62,45 +61,65 @@ export default function Argent() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const isBoss = user?.role === "boss";
   const isAgent = user?.role === "agent";
 
   useEffect(() => {
     setIsLoading(true);
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed: ArgentRow[] = JSON.parse(saved);
-        setRows(parsed);
-        const maxId = parsed.length > 0 ? Math.max(...parsed.map((r) => r.id)) : 0;
+    const fetchRows = async () => {
+      try {
+        const response = await fetch(getApiUrl("argent/"), {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors du chargement des entrées d'argent");
+        }
+
+        const data = await response.json();
+        // data est un tableau d'objets ArgentEntry venant du backend
+        const mapped: ArgentRow[] = Array.isArray(data)
+          ? data.map((item: any) => ({
+              id: item.id,
+              // Le backend renvoie la date au format YYYY-MM-DD -> on l'affiche en JJ/MM/AAAA
+              date: item.date
+                ? `${String(new Date(item.date).getDate()).padStart(2, "0")}/${String(
+                    new Date(item.date).getMonth() + 1,
+                  ).padStart(2, "0")}/${new Date(item.date).getFullYear()}`
+                : getTodayDate(),
+              nom: item.nom || "",
+              lieu_retrait: item.lieu_retrait || "",
+              somme: item.somme !== null && item.somme !== undefined ? Number(item.somme) : null,
+            }))
+          : [];
+
+        setRows(mapped);
+        const maxId = mapped.length > 0 ? Math.max(...mapped.map((r) => r.id)) : 0;
         setNextId(maxId + 1);
+      } catch (error: any) {
+        toast({
+          title: "Erreur",
+          description: error.message || "Impossible de charger les entrées d'argent",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch {
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les anciennes entrées d'argent",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+    };
 
-  useEffect(() => {
-    if (rows.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-  }, [rows]);
+    fetchRows();
+  }, [toast, token]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
+    const today = getTodayDate();
+
     try {
-      setIsSaving(true);
-      const today = getTodayDate();
-
-      // Cas agent : une seule ligne de saisie, mais peut enregistrer plusieurs entrées au fur et à mesure
+      // Cas agent : enregistrement d'une seule nouvelle entrée via l'API
       if (isAgent) {
         if (!agentNom.trim() || !agentLieuRetrait.trim() || agentSomme === null) {
           toast({
@@ -111,17 +130,45 @@ export default function Argent() {
           return;
         }
 
+        const [day, month, year] = (agentDate || today).split("/");
+        const isoDate = `${year}-${month}-${day}`;
+
+        const response = await fetch(getApiUrl("argent/"), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            date: isoDate,
+            nom: agentNom,
+            lieu_retrait: agentLieuRetrait,
+            somme: agentSomme,
+          }),
+        });
+
+        if (!response.ok) {
+          let errorMessage = "Erreur lors de l'enregistrement de l'entrée d'argent";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          } catch {
+            // ignore
+          }
+          throw new Error(errorMessage);
+        }
+
+        const created = await response.json();
+
         const newRow: ArgentRow = {
-          id: nextId,
+          id: created.id,
           date: agentDate || today,
           nom: agentNom,
           lieu_retrait: agentLieuRetrait,
           somme: agentSomme,
         };
 
-        const updatedRows = [...rows, newRow];
-        setRows(updatedRows);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedRows));
+        setRows((prev) => [...prev, newRow]);
 
         // On réinitialise la ligne agent pour permettre une nouvelle saisie
         setAgentDate(getTodayDate());
@@ -133,18 +180,48 @@ export default function Argent() {
           title: "Enregistré",
           description: "Votre entrée d'argent a été enregistrée. Vous pouvez saisir une nouvelle entrée.",
         });
-      } else {
-        // Cas boss : enregistrement de tout le tableau
-        if (rows.length > 0) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
-        } else {
-          localStorage.removeItem(STORAGE_KEY);
+      } else if (isBoss) {
+        // Cas boss : les lignes sont déjà synchronisées avec le backend.
+        // On rafraîchit simplement depuis le serveur pour être sûr.
+        const response = await fetch(getApiUrl("argent/"), {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors du rafraîchissement des entrées d'argent");
         }
+
+        const data = await response.json();
+        const mapped: ArgentRow[] = Array.isArray(data)
+          ? data.map((item: any) => ({
+              id: item.id,
+              date: item.date
+                ? `${String(new Date(item.date).getDate()).padStart(2, "0")}/${String(
+                    new Date(item.date).getMonth() + 1,
+                  ).padStart(2, "0")}/${new Date(item.date).getFullYear()}`
+                : getTodayDate(),
+              nom: item.nom || "",
+              lieu_retrait: item.lieu_retrait || "",
+              somme: item.somme !== null && item.somme !== undefined ? Number(item.somme) : null,
+            }))
+          : [];
+
+        setRows(mapped);
+
         toast({
           title: "Succès !",
-          description: "Les entrées d'argent ont été enregistrées.",
+          description: "Les entrées d'argent ont été synchronisées avec le serveur.",
         });
       }
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'enregistrer les entrées d'argent",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -198,12 +275,49 @@ export default function Argent() {
     setRows((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const handleDeleteConfirm = () => {
-    if (rowToDelete !== null) {
-      deleteRow(rowToDelete);
+  const handleDeleteConfirm = async () => {
+    if (rowToDelete === null) {
+      setDeleteDialogOpen(false);
+      return;
     }
-    setDeleteDialogOpen(false);
+
+    const idToDelete = rowToDelete;
     setRowToDelete(null);
+    setDeleteDialogOpen(false);
+
+    try {
+      const response = await fetch(getApiUrl(`argent/${idToDelete}/`), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok && response.status !== 204) {
+        let errorMessage = "Erreur lors de la suppression de l'entrée d'argent";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch {
+          // ignore
+        }
+        throw new Error(errorMessage);
+      }
+
+      deleteRow(idToDelete);
+
+      toast({
+        title: "Supprimé",
+        description: "L'entrée d'argent a été supprimée.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de supprimer cette entrée d'argent",
+        variant: "destructive",
+      });
+    }
   };
 
   const totalGeneral = rows.reduce((sum, row) => sum + (row.somme || 0), 0);
