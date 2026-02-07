@@ -1,4 +1,4 @@
-import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, ShoppingCart, Receipt, LogOut } from "lucide-react";
+import { LayoutDashboard, Warehouse, UserCheck, Loader, Briefcase, ShoppingCart, Receipt, Truck, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,7 @@ const navItems = [
   { title: "Achats", url: "/achats", icon: ShoppingCart },
   { title: "Dépenses", url: "/depenses", icon: Receipt },
   { title: "Argent", url: "/argent", icon: Receipt },
+  { title: "Transiteur", url: "/transiteur", icon: Truck },
 ];
 
 export function Sidebar() {

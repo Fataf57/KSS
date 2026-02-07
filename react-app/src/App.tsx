@@ -17,6 +17,7 @@ import ListeEmployes from "./pages/ListeEmployes";
 import Achats from "./pages/Achats";
 import Depenses from "./pages/Depenses";
 import Argent from "./pages/Argent";
+import Transiteur from "./pages/Transiteur";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -131,6 +132,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Argent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/transiteur"
+              element={
+                <ProtectedRoute>
+                  <Transiteur />
                 </ProtectedRoute>
               }
             />
