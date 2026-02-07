@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 
 interface Employee {
   id: number;
@@ -180,6 +181,9 @@ export default function ListeEmployes() {
   useEffect(() => {
     fetchEmployees();
   }, [token]);
+
+  // Rafraîchissement automatique toutes les 10 secondes
+  useAutoRefresh(fetchEmployees, 10000);
 
   // Charger la liste des utilisateurs dès que le token est disponible
   useEffect(() => {

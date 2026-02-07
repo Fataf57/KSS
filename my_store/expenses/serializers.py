@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Depense, PeriodStop, ArgentEntry
+from .models import Depense, PeriodStop
 
 
 class DepenseSerializer(serializers.ModelSerializer):
@@ -174,43 +174,4 @@ class PeriodStopCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = PeriodStop
         fields = ['stop_index']
-
-
-class ArgentEntrySerializer(serializers.ModelSerializer):
-    """Serializer pour les entrées d'argent (lecture)"""
-    created_by_username = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = ArgentEntry
-        fields = [
-            'id',
-            'date',
-            'nom',
-            'lieu_retrait',
-            'somme',
-            'created_by',
-            'created_by_username',
-            'created_at',
-            'updated_at',
-        ]
-        read_only_fields = ['created_at', 'updated_at', 'created_by', 'created_by_username']
-
-    def get_created_by_username(self, obj):
-        return obj.created_by.username if obj.created_by else None
-
-
-class ArgentEntryCreateSerializer(serializers.ModelSerializer):
-    """Serializer pour créer des entrées d'argent"""
-
-    class Meta:
-        model = ArgentEntry
-        fields = ['id', 'date', 'nom', 'lieu_retrait', 'somme']
-
-    def validate_somme(self, value):
-        """La somme doit être positive ou nulle."""
-        if value is None:
-            raise serializers.ValidationError("La somme est obligatoire.")
-        if value < 0:
-            raise serializers.ValidationError("La somme ne peut pas être négative.")
-        return value
 

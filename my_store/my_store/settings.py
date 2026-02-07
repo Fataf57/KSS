@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'stock',
     'employees',
     'expenses',
+    'argent',
     'purchases',
 ]
 

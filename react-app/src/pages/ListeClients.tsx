@@ -19,6 +19,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 
 interface Client {
   id: number;
@@ -68,9 +69,13 @@ export default function ListeClients() {
     }
   };
 
+  // Chargement initial
   useEffect(() => {
     fetchClients();
   }, []);
+
+  // Rafraîchissement automatique toutes les 10 secondes
+  useAutoRefresh(fetchClients, 10000);
 
   const handleAddClient = async () => {
     if (!newClient.nom_prenom.trim()) {
