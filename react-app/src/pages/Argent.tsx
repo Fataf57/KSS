@@ -686,7 +686,7 @@ export default function Argent() {
                           <th className="border-r-4 border-gray-600 dark:border-gray-400 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[160px] bg-muted">
                             Somme rentrée
                           </th>
-                          <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[150px] bg-muted">
+                          <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[150px] bg-red-100 dark:bg-red-950/40">
                             Nom de Recevant
                           </th>
                           <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[160px] bg-red-100 dark:bg-red-950/40">
@@ -765,12 +765,12 @@ export default function Argent() {
                               )}
                             </div>
                           </td>
-                          <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                          <td className="border-r border-gray-400 dark:border-gray-600 p-0 bg-red-50 dark:bg-red-950/20">
                             <Input
                               type="text"
                               value={agentNomRecevant || ""}
                               onChange={(e) => setAgentNomRecevant(e.target.value)}
-                              className="border-0 rounded-none h-11 bg-transparent focus:bg-accent/10 font-medium text-foreground"
+                              className="border-0 rounded-none h-11 bg-transparent focus:bg-red-100 dark:focus:bg-red-950/30 font-medium text-foreground"
                               style={{ fontSize: "1.25rem" }}
                             />
                           </td>
@@ -848,7 +848,7 @@ export default function Argent() {
                           <th className="border-r-4 border-gray-600 dark:border-gray-400 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[160px] bg-muted">
                             Somme rentrée
                           </th>
-                          <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[150px] bg-muted">
+                          <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground min-w-[150px] bg-red-100 dark:bg-red-950/40">
                             Nom de Recevant
                           </th>
                           <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[160px] bg-red-100 dark:bg-red-950/40">
@@ -930,12 +930,12 @@ export default function Argent() {
                                     )}
                                   </div>
                                 </td>
-                                <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                                <td className="border-r border-gray-400 dark:border-gray-600 p-0 bg-red-50 dark:bg-red-950/20">
                                   <Input
                                     type="text"
                                     value={row.nom_recevant || ""}
                                     onChange={(e) => updateCell(row.id, "nom_recevant", e.target.value)}
-                                    className="border-0 rounded-none h-11 bg-transparent focus:bg-accent/10 font-medium text-foreground"
+                                    className="border-0 rounded-none h-11 bg-transparent focus:bg-red-100 dark:focus:bg-red-950/30 font-medium text-foreground"
                                     style={{ fontSize: "1.25rem" }}
                                   />
                                 </td>
@@ -971,8 +971,8 @@ export default function Argent() {
                         {rows.length > 0 && (
                           <tfoot className="border-t-4 border-gray-500 dark:border-gray-400">
                             <tr className="bg-muted/50">
-                              <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-3" colSpan={6} />
-                              <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-3 text-center font-bold text-xl text-card-foreground bg-muted/20">
+                              <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-3" colSpan={5} />
+                              <td className="border-r-4 border-gray-600 dark:border-gray-400 px-1 py-3 text-center font-bold text-xl text-card-foreground bg-muted/20">
                                 <div className="flex flex-col items-center">
                                   <span className="text-lg">Total entrées :</span>
                                   <span className="text-2xl mt-1">
@@ -980,6 +980,7 @@ export default function Argent() {
                                   </span>
                                 </div>
                               </td>
+                              <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-3 bg-red-100 dark:bg-red-950/40" />
                               <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-3 text-center font-bold text-xl text-card-foreground bg-red-100 dark:bg-red-950/40">
                                 <div className="flex flex-col items-center">
                                   <span className="text-lg">Total sortie :</span>
