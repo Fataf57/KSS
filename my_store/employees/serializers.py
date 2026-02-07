@@ -28,6 +28,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'postal_code',
             'country',
             'is_private',
+            'is_active',
             'allowed_users',
             'created_by',
             'created_at',
@@ -78,7 +79,7 @@ class EmployeeListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ['id', 'full_name', 'email', 'phone', 'city', 'is_private']
+        fields = ['id', 'full_name', 'email', 'phone', 'city', 'is_private', 'is_active']
 
 
 class EmployeeExpenseSerializer(serializers.ModelSerializer):

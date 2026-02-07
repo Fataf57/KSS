@@ -68,27 +68,6 @@ class TransiteurEntryCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        """Valider qu'il y a au moins une valeur (dépenses ou argent donné)."""
-        import logging
-        logger = logging.getLogger(__name__)
-        
-        depenses = data.get('depenses')
-        argent_donne = data.get('argent_donne')
-        
-        logger.info(f"Validation - depenses: {depenses}, argent_donne: {argent_donne}")
-        
-        has_depenses = depenses is not None
-        has_argent_donne = argent_donne is not None
-        
-        logger.info(f"Validation - has_depenses: {has_depenses}, has_argent_donne: {has_argent_donne}")
-        
-        if not has_depenses and not has_argent_donne:
-            error_msg = "Il doit y avoir au moins des dépenses ou de l'argent donné."
-            logger.warning(f"Validation échouée: {error_msg}")
-            raise serializers.ValidationError({
-                'non_field_errors': [error_msg]
-            })
-        
-        logger.info("Validation réussie")
+        """Validation optionnelle - les dépenses et l'argent donné sont optionnels."""
         return data
 

@@ -160,19 +160,6 @@ export default function Transiteur() {
     try {
       // Cas agent : enregistrement d'une seule nouvelle entrée via l'API
       if (isAgent) {
-        const hasAnyData = 
-          (agentDepenses !== null && agentDepenses !== undefined) ||
-          (agentArgentDonne !== null && agentArgentDonne !== undefined);
-        
-        if (!hasAnyData) {
-          toast({
-            title: "Champs manquants",
-            description: "Veuillez remplir au moins une valeur (dépenses ou argent donné).",
-            variant: "destructive",
-          });
-          setIsSaving(false);
-          return;
-        }
 
         const today = getTodayDate();
         const [day, month, year] = (agentDate || today).split("/");
@@ -260,10 +247,8 @@ export default function Transiteur() {
         
         const newRows = rows.filter((row) => {
           if (savedIds.has(row.id)) return false;
-          const hasAnyData = 
-            (row.depenses !== null && row.depenses !== undefined) ||
-            (row.argent_donne !== null && row.argent_donne !== undefined);
-          return hasAnyData;
+          // Toutes les lignes peuvent être sauvegardées, même si elles sont vides
+          return true;
         });
         const existingRows = rows.filter((row) => savedIds.has(row.id));
 

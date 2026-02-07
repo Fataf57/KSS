@@ -17,6 +17,10 @@ class Employee(models.Model):
         default=False,
         help_text="Si coché, le tableau de cet employé est visible uniquement par certains utilisateurs."
     )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Si décoché, le tableau de cet employé est désactivé et masqué pour tous les utilisateurs."
+    )
     allowed_users = models.ManyToManyField(
         User,
         blank=True,

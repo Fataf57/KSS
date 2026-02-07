@@ -44,16 +44,23 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 | Q(email__icontains=search)
             )
 
-        # Gestion de la confidentialité
-        visibility_filter = Q(is_private=False)
+        # Gestion de la confidentialité et de l'activation
+        # Ne montrer que les employés actifs
+        visibility_filter = Q(is_active=True, is_private=False)
 
         if user and user.is_authenticated:
             # Un employé privé est visible par son créateur ou les utilisateurs autorisés
-            visibility_filter |= Q(is_private=True, created_by=user) | Q(
-                is_private=True, allowed_users__id=user.id
+            visibility_filter |= Q(
+                is_active=True,
+                is_private=True,
+                created_by=user
+            ) | Q(
+                is_active=True,
+                is_private=True,
+                allowed_users__id=user.id
             )
             if user.is_superuser:
-                # Un superuser voit tout
+                # Un superuser voit tout (y compris les désactivés)
                 visibility_filter = Q()
 
         queryset = queryset.filter(visibility_filter).distinct()
