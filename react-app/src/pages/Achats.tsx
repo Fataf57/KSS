@@ -782,12 +782,14 @@ export default function Achats() {
       const totalsFinalY = ((doc as any).lastAutoTable?.finalY || finalY + 20);
       
       // Pied de page - s'assurer qu'il est toujours visible
-      const footerY = pageHeight - 20;
-      doc.setFontSize(11); // Augmentation de la taille de police de la date
+      const footerY = pageHeight - 22;
+      doc.setFontSize(13); // Taille de police pour la date à compléter manuellement
       doc.setFont("helvetica", "normal");
-      const today = new Date().toLocaleDateString('fr-FR');
-      const leftFooter = `Bobo Dioulasso le ${today}`;
-      doc.text(leftFooter, margin, footerY);
+      // Afficher les deux lignes verticalement (l'une sous l'autre)
+      const leftFooterBurkina = "Burkina le __ / __ / 2026";
+      const leftFooterMali = "Mali le __ / __ / 2026";
+      doc.text(leftFooterBurkina, margin, footerY);
+      doc.text(leftFooterMali, margin, footerY + 10);
       
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13); // Augmentation de la taille de police

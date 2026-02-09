@@ -642,7 +642,7 @@ export default function ChargementCamion() {
       }
       
       // Ligne 1 gauche : Première partie du nom de l'entreprise
-      doc.setFontSize(9);
+      doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       const leftText1a = "ETABLISSEMENT KADER SAWADOGO";
       doc.text(leftText1a, margin, startY + 4);
@@ -762,10 +762,12 @@ export default function ChargementCamion() {
       ];
       
       autoTable(doc, {
-        startY: titleY + 5,
+        // On commence un peu plus bas pour laisser respirer le titre
+        startY: titleY + 8,
         body: tableData,
         theme: "grid",
         styles: { 
+          // Tableau un peu plus compact pour réduire la hauteur totale
           fontSize: 12, 
           cellPadding: 5, 
           lineColor: [0, 0, 0], 
@@ -797,15 +799,18 @@ export default function ChargementCamion() {
         tableWidth: 'auto',
       });
       
-      // Dessiner le pied de page après le tableau avec un espacement approprié
+      // Dessiner le pied de page après le tableau avec un espacement plus important
       const tableEndY = (doc as any).lastAutoTable?.finalY || titleY + 5;
-      const footerY = Math.min(tableEndY + 10, pageHeight - 15);
+      // Encore un peu plus d'espace entre le tableau et le pied de page
+      const footerY = Math.min(tableEndY + 40, pageHeight - 20);
       
       doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      const today = new Date().toLocaleDateString('fr-FR');
-      const leftFooter = `Bobo Dioulasso le ${today}`;
-      doc.text(leftFooter, margin, footerY);
+      // Afficher les deux lignes verticalement (l'une sous l'autre)
+      const leftFooterBurkina = "Burkina le __ / __ / 2026";
+      const leftFooterMali = "Mali le __ / __ / 2026";
+      doc.text(leftFooterBurkina, margin, footerY);
+      doc.text(leftFooterMali, margin, footerY + 9);
       
       doc.setFont("helvetica", "bold");
       doc.setFontSize(11);

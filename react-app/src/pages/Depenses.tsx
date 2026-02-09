@@ -886,7 +886,7 @@ export default function Depenses() {
       const rightText1c = "NOUS VAINCRONS";
       const rightText1cWidth = doc.getTextWidth(rightText1c);
       doc.text(rightText1c, pageWidth - margin - rightText1cWidth, startY + 17);
-      
+
       // Ligne 4 gauche : Tel BF (espacé du nom de l'entreprise)
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
@@ -902,18 +902,31 @@ export default function Depenses() {
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.5);
       doc.line(margin, separatorY, pageWidth - margin, separatorY);
-      
+
       // Titre du document
       doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
       const titleY = separatorY + 8;
       doc.text("RAPPORT DES DÉPENSES", pageWidth / 2, titleY, { align: "center" });
       
-      // Informations de période (dates seulement)
+      // Zone infos comme dans le reçu d'achat : Nom et Tel sous le titre
       let infoY = titleY + 10;
-      doc.setFontSize(10);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+
+      // "Nom :" à gauche
+      doc.text("Nom :", margin, infoY);
+
+      // "Tel :" sur la même ligne, mais légèrement reculé pour laisser de la place au numéro
+      const telLabel = "Tel :";
+      const telLabelWidth = doc.getTextWidth(telLabel);
+      const telOffset = 40; // espace pour écrire le numéro à droite
+      doc.text(telLabel, pageWidth - margin - telLabelWidth - telOffset, infoY);
+
+      infoY += 8;
+
+      // Informations de période (dates seulement), centrées sous Nom/Tel
       doc.setFont("helvetica", "normal");
-      
       if (periodLabel) {
         doc.text(periodLabel, pageWidth / 2, infoY, { align: "center" });
         infoY += 8;
@@ -978,12 +991,14 @@ export default function Depenses() {
         },
         didDrawPage: () => {
           // Pied de page - s'assurer qu'il est toujours visible
-          const footerY = pageHeight - 20;
-          doc.setFontSize(11); // Augmentation de la taille de police de la date
+          const footerY = pageHeight - 22;
+          doc.setFontSize(13); // Taille de police pour la date à compléter manuellement
           doc.setFont("helvetica", "normal");
-          const today = new Date().toLocaleDateString('fr-FR');
-          const leftFooter = `Bobo Dioulasso le ${today}`;
-          doc.text(leftFooter, margin, footerY);
+          // Afficher les deux lignes verticalement (l'une sous l'autre)
+          const leftFooterBurkina = "Burkina le __ / __ / 2026";
+          const leftFooterMali = "Mali le __ / __ / 2026";
+          doc.text(leftFooterBurkina, margin, footerY);
+          doc.text(leftFooterMali, margin, footerY + 10);
           
           doc.setFont("helvetica", "bold");
           doc.setFontSize(13); // Augmentation de la taille de police

@@ -18,6 +18,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
 import { useAuth } from "@/contexts/AuthContext";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface EmployeeExpenseRow {
   id: number;
@@ -135,6 +137,9 @@ export default function SuiviEmployes() {
   const [currentEmployee, setCurrentEmployee] = useState<{id: number, full_name: string} | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState<number | null>(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfStartLine, setPdfStartLine] = useState<string>("");
+  const [pdfEndLine, setPdfEndLine] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { token } = useAuth();
@@ -650,6 +655,231 @@ export default function SuiviEmployes() {
 
   const organizedRows = organizeRowsByMonth();
 
+  const handleDownloadPdfSection = async () => {
+    if (!isPdfModalOpen) {
+      setPdfStartLine("");
+      setPdfEndLine("");
+      setIsPdfModalOpen(true);
+      return;
+    }
+
+    if (!employeeId || !currentEmployee) {
+      toast({
+        title: "Erreur",
+        description: "Aucun employé sélectionné pour le téléchargement.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (rows.length === 0) {
+      toast({
+        title: "Aucune donnée",
+        description: "Il n'y a aucune ligne dans le tableau à exporter.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const maxLineNumber = rows.length;
+
+    const startLine = parseInt(pdfStartLine, 10);
+
+    if (Number.isNaN(startLine) || startLine < 1 || startLine > maxLineNumber) {
+      toast({
+        title: "Valeur invalide",
+        description: "Le numéro de ligne de début est invalide.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const endLine = parseInt(pdfEndLine, 10);
+
+    if (
+      Number.isNaN(endLine) ||
+      endLine < startLine ||
+      endLine > maxLineNumber
+    ) {
+      toast({
+        title: "Valeur invalide",
+        description: "Le numéro de ligne de fin est invalide.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsPdfModalOpen(false);
+
+    const rowsWithIndex = rows.map((row, index) => ({
+      ...row,
+      rowNumber: index + 1,
+    }));
+
+    const selectedRows = rowsWithIndex.filter(
+      (r) => r.rowNumber >= startLine && r.rowNumber <= endLine
+    );
+
+    if (selectedRows.length === 0) {
+      toast({
+        title: "Aucune ligne",
+        description: "Aucune ligne trouvée dans l'intervalle spécifié.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 14;
+
+    // En-tête entreprise identique à Achats / Dépenses
+    const startY = margin;
+
+    // Logo au centre
+    const logoHeight = 25;
+    const logoWidth = 35;
+    const logoX = (pageWidth - logoWidth) / 2;
+    try {
+      const logoResponse = await fetch("/ksslogo.jpeg");
+      if (logoResponse.ok) {
+        const logoBlob = await logoResponse.blob();
+        const logoUrl = URL.createObjectURL(logoBlob);
+        doc.addImage(logoUrl, "JPEG", logoX, startY, logoWidth, logoHeight);
+        URL.revokeObjectURL(logoUrl);
+      }
+    } catch (e) {
+      console.warn("Logo non trouvé, continuation sans logo", e);
+    }
+
+    // Ligne 1 gauche : Première partie du nom de l'entreprise
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    const leftText1a = "ETABLISSEMENT KADER SAWADOGO";
+    doc.text(leftText1a, margin, startY + 5);
+
+    // Ligne 1 droite : BURKINA FASSO
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    const rightText1a = "BURKINA FASSO";
+    const rightText1aWidth = doc.getTextWidth(rightText1a);
+    doc.text(rightText1a, pageWidth - margin - rightText1aWidth, startY + 5);
+
+    // Ligne 2 gauche : Deuxième partie du nom de l'entreprise
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    const leftText1b = "ET FRERE";
+    doc.text(leftText1b, margin, startY + 11);
+
+    // Ligne 2 droite : LA PATRIE OU LA MORT
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    const rightText1b = "LA PATRIE OU LA MORT";
+    const rightText1bWidth = doc.getTextWidth(rightText1b);
+    doc.text(rightText1b, pageWidth - margin - rightText1bWidth, startY + 11);
+
+    // Ligne 3 droite : NOUS VAINCRONS
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    const rightText1c = "NOUS VAINCRONS";
+    const rightText1cWidth = doc.getTextWidth(rightText1c);
+    doc.text(rightText1c, pageWidth - margin - rightText1cWidth, startY + 17);
+
+    // Ligne 4 gauche : Tel BF
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    const telTextBF = "Tel BF    : +226 75 58 57 76 | 76 54 71 71";
+    doc.text(telTextBF, margin, startY + 15);
+
+    // Ligne 5 gauche : Tel Mali
+    const telTextMali = "Tel Mali : +223 73 73 73 44 | 74 52 11 47";
+    doc.text(telTextMali, margin, startY + 21);
+
+    // Ligne de séparation
+    const separatorY = startY + 27;
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, separatorY, pageWidth - margin, separatorY);
+
+    // Titre du document sous l'entête
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    const title = "TABLEAU EMPLOYÉ";
+    const titleWidth = doc.getTextWidth(title);
+    const titleY = separatorY + 8;
+    doc.text(title, (pageWidth - titleWidth) / 2, titleY);
+
+    // Infos employé + plage de lignes
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    const infoY = titleY + 6;
+    const employeeLine = `Nom : ${currentEmployee.full_name}`;
+    doc.text(employeeLine, margin, infoY);
+
+    const body = selectedRows.map((row) => [
+      row.date ? formatDateDisplay(row.date) : "",
+      row.somme_remise !== null && row.somme_remise !== undefined
+        ? `${formatNumber(row.somme_remise)} F`
+        : "",
+      row.nom_depense || "",
+      row.somme_depense !== null && row.somme_depense !== undefined
+        ? `${formatNumber(row.somme_depense)} F`
+        : "",
+      row.somme_restante !== null && row.somme_restante !== undefined
+        ? `${formatNumber(row.somme_restante)} F`
+        : "",
+    ]);
+
+    autoTable(doc, {
+      head: [
+        ["Date", "Somme remise", "Nom de la dépense", "Somme dépense", "Somme restante"],
+      ],
+      body,
+      startY: infoY + 6,
+      styles: {
+        fontSize: 12,
+        cellPadding: 5,
+        lineWidth: 0.4,
+        lineColor: [0, 0, 0],
+        textColor: [0, 0, 0],
+      },
+      headStyles: {
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
+        fontStyle: "bold",
+        fontSize: 13,
+        lineWidth: 0.5,
+        lineColor: [0, 0, 0],
+      },
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+      margin: { left: margin, right: margin },
+      tableWidth: "auto",
+      didDrawPage: () => {
+        const footerY = pageHeight - 22;
+        doc.setFontSize(13);
+        doc.setFont("helvetica", "normal");
+        const leftFooterBurkina = "Burkina le __ / __ / 2026";
+        const leftFooterMali = "Mali le __ / __ / 2026";
+        doc.text(leftFooterBurkina, margin, footerY);
+        doc.text(leftFooterMali, margin, footerY + 10);
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        const rightFooter = "SIGNATURE DU PDG DE KSS";
+        const rightFooterWidth = doc.getTextWidth(rightFooter);
+        doc.text(rightFooter, pageWidth - margin - rightFooterWidth, footerY);
+      },
+    });
+
+    const safeName = currentEmployee.full_name
+      .replace(/\s+/g, "_")
+      .replace(/[^a-zA-Z0-9_\-]/g, "");
+    doc.save(
+      `tableau_employe_${safeName || "employe"}_l${startLine}-${endLine}.pdf`
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col h-full">
@@ -659,6 +889,20 @@ export default function SuiviEmployes() {
             icon={Users}
             action={
               <div className="flex gap-2">
+                {currentEmployee && (
+                  <Button
+                    onClick={() => {
+                      setPdfStartLine("");
+                      setPdfEndLine("");
+                      setIsPdfModalOpen(true);
+                    }}
+                    variant="outline"
+                    className="gap-2"
+                    disabled={rows.length === 0}
+                  >
+                    Télécharger PDF
+                  </Button>
+                )}
                 {currentEmployee && (
                   <Button 
                     onClick={handleSave} 
@@ -853,6 +1097,51 @@ export default function SuiviEmployes() {
           )}
         </div>
       </div>
+      
+      {/* Modal pour téléchargement PDF par section */}
+      {isPdfModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-card rounded-xl border border-border p-6 w-full max-w-md shadow-lg">
+            <div className="grid gap-3 mb-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-card-foreground">
+                  Ligne de début
+                </span>
+                <Input
+                  type="text"
+                  value={pdfStartLine}
+                  onChange={(e) => setPdfStartLine(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-card-foreground">
+                  Ligne de fin
+                </span>
+                <Input
+                  type="text"
+                  value={pdfEndLine}
+                  onChange={(e) => setPdfEndLine(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => setIsPdfModalOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleDownloadPdfSection}
+                disabled={!pdfStartLine || !pdfEndLine}
+                className="gap-2"
+              >
+                Télécharger
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Bouton flottant pour ajouter une ligne */}
       {currentEmployee && (
