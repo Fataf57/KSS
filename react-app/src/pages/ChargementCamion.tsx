@@ -744,7 +744,7 @@ export default function ChargementCamion() {
         ["Poids manqué", poidsManquantValue !== null && poidsManquantValue !== undefined && poidsManquantValue > 0
           ? `${formatNumber(poidsManquantValue)} kg`
           : ""],
-        ["Total Transfort", totalTransfort > 0 ? (() => {
+        ["Total Transport", totalTransfort > 0 ? (() => {
           let formatted = formatNumberWithSpaces(totalTransfort);
           formatted = formatted.replace(/\.00$/, '');
           return formatted + " F";
@@ -1233,7 +1233,7 @@ export default function ChargementCamion() {
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° chauffeur</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Poid arrivé</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
-                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Total Transfort</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Total Transport</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Donné</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Restant</th>
                       <th className="px-0.5 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground w-7 bg-muted">#</th>

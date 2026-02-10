@@ -23,6 +23,7 @@ interface ClientChargementRow {
   id: number;
   date_chargement: string;
   nom_produit: string; // Nom du produit
+  n_camion: string; // Numéro de camion
   type_operation: "produit" | "avance" | "reglement" | "fin_de_compte"; // Type d'opération
   client: string;
   nombre_sacs: number | null;
@@ -39,6 +40,8 @@ interface ClientChargementRow {
 }
 const getStorageKey = (clientId?: string) => 
   clientId ? `client_chargements_rows_${clientId}` : "client_chargements_rows";
+
+const NOMS_PRODUITS_PREDEFINIS = ["Anacarde", "Karité", "Sesame", "Soza", "Mais"];
 
 // Fonction pour trier les lignes par ordre d'insertion (savedId pour les enregistrées, id pour les non enregistrées)
 // IMPORTANT: Cette fonction est utilisée uniquement lors du chargement initial depuis l'API
@@ -208,6 +211,7 @@ export default function SuiviClients() {
               id: item.id + 100000, // ID élevé pour éviter les conflits
               date_chargement: formatDateDisplay(item.date_chargement),
               nom_produit: item.nom_produit || "",
+              n_camion: item.n_camion || "",
               type_operation: isFinDeCompte ? "fin_de_compte" : ((item.type_operation || "produit") as "produit" | "avance" | "reglement" | "fin_de_compte"),
               client: currentClient.full_name,
               nombre_sacs: item.nombre_sacs ?? null,
@@ -326,7 +330,7 @@ export default function SuiviClients() {
       const updatedRows = prevRows.map(row => {
         if (row.id === id) {
           // Pour les dates et les chaînes, garder la valeur telle quelle
-          if (field === "date_chargement" || field === "client" || field === "type_operation" || field === "nom_produit") {
+          if (field === "date_chargement" || field === "client" || field === "type_operation" || field === "nom_produit" || field === "n_camion") {
             const updated = { ...row, [field]: value as string };
             
             // Recalculer les sommes restantes si la date change (car le tri peut changer)
@@ -391,6 +395,7 @@ export default function SuiviClients() {
       id: nextId,
       date_chargement: getTodayDate(),
       nom_produit: "",
+      n_camion: "",
       type_operation: "produit", // Par défaut "produit"
       client: currentClient.full_name,
       nombre_sacs: null,
@@ -453,6 +458,7 @@ export default function SuiviClients() {
       id: nextId,
       date_chargement: getTodayDate(),
       nom_produit: "FIN DE COMPTE",
+      n_camion: "",
       type_operation: "fin_de_compte",
       client: currentClient.full_name,
       nombre_sacs: null,
@@ -577,6 +583,7 @@ export default function SuiviClients() {
                     id: item.id + 100000,
                     date_chargement: formatDateDisplay(item.date_chargement),
                     nom_produit: item.nom_produit || "",
+                    n_camion: item.n_camion || "",
                     type_operation: isFinDeCompte ? "fin_de_compte" : ((item.type_operation || "produit") as "produit" | "avance" | "reglement" | "fin_de_compte"),
                     client: currentClient.full_name,
                     nombre_sacs: item.nombre_sacs ?? null,
@@ -719,6 +726,7 @@ export default function SuiviClients() {
       const payload = {
         date_chargement: convertDateToAPIFormat(row.date_chargement),
         nom_produit: row.nom_produit || "",
+        n_camion: row.n_camion || "",
         type_operation: typeOperationBackend,
         client: clientIdToUse,
         nombre_sacs: row.nombre_sacs ?? null,
@@ -824,6 +832,7 @@ export default function SuiviClients() {
         const payload = {
           date_chargement: convertDateToAPIFormat(row.date_chargement),
           nom_produit: row.nom_produit || "",
+          n_camion: row.n_camion || "",
           type_operation: typeOperationBackend,
           client: currentClient.id,
           nombre_sacs: row.nombre_sacs ?? null,
@@ -973,6 +982,11 @@ export default function SuiviClients() {
 
   return (
     <DashboardLayout>
+      <datalist id="noms-produits">
+        {NOMS_PRODUITS_PREDEFINIS.map((produit) => (
+          <option key={produit} value={produit} />
+        ))}
+      </datalist>
       <div className="flex flex-col h-[calc(100vh-140px)]">
         <div className="flex-shrink-0 mb-4">
           <PageHeader
@@ -1034,13 +1048,14 @@ export default function SuiviClients() {
                   <tr className="bg-muted sticky top-0 z-20">
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-xl text-card-foreground w-[50px] bg-muted">N°</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground w-[150px] bg-muted">Date</th>
-                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[200px] bg-muted">Nom Produit</th>
+                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[170px] bg-muted">Nom Produit</th>
+                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[180px] bg-muted">N camion</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[55px] bg-muted">Nb. sacs</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[50px] bg-muted">Poids</th>
-                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[110px] bg-muted">Tonnage</th>
+                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[140px] bg-muted">Tonnage</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[65px] bg-muted">Prix/kg</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[130px] bg-muted">Somme totale</th>
-                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[110px] bg-muted">Avance</th>
+                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Avance</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted font-bold">Somme restante</th>
                     <th className="px-0.5 py-2 text-center font-semibold text-xl text-card-foreground w-7 bg-muted">#</th>
                   </tr>
@@ -1071,19 +1086,27 @@ export default function SuiviClients() {
                                 updateCell(row.id, "date_chargement", getTodayDate());
                               }
                             }}
-                            placeholder={getTodayDate()}
                             className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground"
                           />
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">
                           <Input
                             type="text"
+                            list="noms-produits"
                             value={row.nom_produit || ""}
                             onChange={(e) => updateCell(row.id, "nom_produit", e.target.value)}
                             className={`border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default ${
                               row.type_operation === "fin_de_compte" ? "text-red-600 dark:text-red-400" : ""
                             }`}
-                            placeholder="Nom du produit"
+                            disabled={row.isSaved && savingRowId !== row.id}
+                          />
+                        </td>
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                          <Input
+                            type="text"
+                            value={row.n_camion || ""}
+                            onChange={(e) => updateCell(row.id, "n_camion", e.target.value)}
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default"
                             disabled={row.isSaved && savingRowId !== row.id}
                           />
                         </td>
@@ -1097,7 +1120,6 @@ export default function SuiviClients() {
                               updateCell(row.id, "nombre_sacs", isNaN(num as number) ? null : num);
                             }}
                             className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default"
-                            placeholder="0"
                             disabled={row.isSaved && savingRowId !== row.id}
                           />
                         </td>
@@ -1140,12 +1162,8 @@ export default function SuiviClients() {
                                 });
                               }}
                               className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default flex-1"
-                              placeholder="0"
                               disabled={row.isSaved && savingRowId !== row.id}
                             />
-                            {row.poids !== null && row.poids !== undefined && row.poids > 0 && (
-                              <span className="text-base text-muted-foreground px-1">kg</span>
-                            )}
                           </div>
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xl text-foreground bg-muted/20">
@@ -1168,7 +1186,6 @@ export default function SuiviClients() {
                                 updateCell(row.id, "prix", isNaN(num as number) ? null : num);
                               }}
                               className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default flex-1"
-                              placeholder="0"
                               disabled={row.isSaved && savingRowId !== row.id}
                             />
                             {row.prix !== null && row.prix !== undefined && row.prix > 0 && (
@@ -1196,7 +1213,6 @@ export default function SuiviClients() {
                                 updateCell(row.id, "avance", isNaN(num as number) ? null : num);
                               }}
                               className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default flex-1"
-                              placeholder="0"
                               disabled={row.isSaved && savingRowId !== row.id}
                             />
                             {row.avance !== null && row.avance !== undefined && row.avance > 0 && (
