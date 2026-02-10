@@ -1076,7 +1076,7 @@ export default function SuiviClients() {
                         <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-center font-medium text-xl text-foreground">
                           {index + 1}
                         </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0 w-[150px]">
                           <Input
                             type="text"
                             value={row.date_chargement || ""}
@@ -1086,7 +1086,7 @@ export default function SuiviClients() {
                                 updateCell(row.id, "date_chargement", getTodayDate());
                               }
                             }}
-                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground"
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-lg md:text-lg font-medium text-foreground w-full"
                           />
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">
