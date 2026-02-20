@@ -53,6 +53,12 @@ class ClientChargement(models.Model):
         default="",
         verbose_name="Nom du produit"
     )
+    n_camion = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="Numéro de camion"
+    )
     nombre_sacs = models.IntegerField(verbose_name="Nombre de sacs", null=True, blank=True, default=None)
     poids = models.DecimalField(
         max_digits=10, 
@@ -121,7 +127,8 @@ class ClientChargement(models.Model):
 
     def save(self, *args, **kwargs):
         # Calcul automatique du tonnage (nombre de sacs × poids) si les deux sont fournis
-        if self.nombre_sacs is not None and self.poids is not None:
+        # SEULEMENT si le tonnage n'a pas déjà été défini manuellement
+        if self.tonnage is None and self.nombre_sacs is not None and self.poids is not None:
             tonnage_brut = Decimal(self.nombre_sacs) * Decimal(self.poids)
             
             # Soustraire le poids des sacs vides si fourni
@@ -130,18 +137,13 @@ class ClientChargement(models.Model):
                 self.tonnage = tonnage_brut - poids_total_sacs_vides
             else:
                 self.tonnage = tonnage_brut
-        else:
+        elif self.tonnage is None:
+            # Si le tonnage n'est pas défini et qu'on ne peut pas le calculer, le laisser à None
             self.tonnage = None
         
         # Calcul automatique de la somme totale (tonnage × prix) si les deux sont fournis
-        # SAUF pour les lignes de règlement où on peut définir manuellement somme_totale
-        if self.type_operation == 'reglement':
-            # Pour les règlements, on garde la somme_totale telle quelle si elle est définie
-            # Sinon, on la calcule normalement si tonnage et prix sont fournis
-            if self.somme_totale is None and self.tonnage is not None and self.prix is not None:
-                self.somme_totale = Decimal(self.tonnage) * Decimal(self.prix)
-        else:
-            # Pour les autres types, calculer normalement
+        # SEULEMENT si la somme_totale n'a pas déjà été définie manuellement
+        if self.somme_totale is None:
             if self.tonnage is not None and self.prix is not None:
                 self.somme_totale = Decimal(self.tonnage) * Decimal(self.prix)
             else:

@@ -1202,15 +1202,14 @@ export default function SuiviClients() {
                               }
                               onChange={(e) => {
                                 const raw = e.target.value;
-                                // Mémoriser exactement ce que tape l'utilisateur (avec virgule)
-                                setTonnageInputs((prev) => ({
-                                  ...prev,
-                                  [row.id]: raw,
-                                }));
-
+                                // Nettoyer la valeur saisie (supprimer espaces et remplacer virgule par point)
                                 const cleaned = raw.replace(/\s/g, "").replace(",", ".");
 
                                 if (cleaned === "") {
+                                  setTonnageInputs((prev) => ({
+                                    ...prev,
+                                    [row.id]: "",
+                                  }));
                                   updateCell(row.id, "tonnage", null);
                                   setTonnageManuel(prev => {
                                     const newState = { ...prev };
@@ -1222,6 +1221,12 @@ export default function SuiviClients() {
 
                                 const num = Number(cleaned);
                                 if (!isNaN(num)) {
+                                  // Formater avec espaces pour l'affichage pendant la saisie
+                                  const formatted = formatNumber(num);
+                                  setTonnageInputs((prev) => ({
+                                    ...prev,
+                                    [row.id]: formatted,
+                                  }));
                                   updateCell(row.id, "tonnage", num);
                                 }
                               }}

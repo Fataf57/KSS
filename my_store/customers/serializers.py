@@ -70,7 +70,7 @@ class ClientChargementSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientChargement
         fields = [
-            'id', 'date_chargement', 'client', 'client_name', 'type_operation', 'nom_produit', 'nombre_sacs',
+            'id', 'date_chargement', 'client', 'client_name', 'type_operation', 'nom_produit', 'n_camion', 'nombre_sacs',
             'poids', 'poids_sac_vide', 'tonnage', 'prix', 'somme_totale', 'avance', 'somme_restante',
             'statut_dette', 'statut_dette_display', 'notes',
             'created_by', 'created_by_username', 'created_at', 'updated_at'
@@ -93,15 +93,16 @@ class ClientChargementCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientChargement
         fields = [
-            'date_chargement', 'client', 'type_operation', 'nom_produit', 'nombre_sacs', 'poids', 'poids_sac_vide', 'prix', 'somme_totale', 'avance', 'notes'
+            'date_chargement', 'client', 'type_operation', 'nom_produit', 'n_camion', 'nombre_sacs', 'poids', 'poids_sac_vide', 'tonnage', 'prix', 'somme_totale', 'avance', 'notes'
         ]
         extra_kwargs = {
+            'tonnage': {'required': False, 'allow_null': True},
             'somme_totale': {'required': False, 'allow_null': True},
         }
 
     def create(self, validated_data):
         # Les calculs seront faits automatiquement dans le modèle
-        # Pour les lignes de règlement, on peut définir manuellement somme_totale
+        # Sauf si tonnage ou somme_totale sont déjà fournis manuellement
         return ClientChargement.objects.create(**validated_data)
 
 
@@ -113,7 +114,7 @@ class ClientChargementListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientChargement
         fields = [
-            'id', 'date_chargement', 'client_name', 'type_operation', 'nom_produit', 'nombre_sacs',
+            'id', 'date_chargement', 'client_name', 'type_operation', 'nom_produit', 'n_camion', 'nombre_sacs',
             'poids', 'poids_sac_vide', 'tonnage', 'prix', 'somme_totale', 'avance', 'somme_restante',
             'statut_dette_display', 'created_at'
         ]
