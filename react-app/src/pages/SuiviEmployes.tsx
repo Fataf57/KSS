@@ -27,6 +27,8 @@ interface EmployeeExpenseRow {
   employee: string;
   somme_remise: number | null;
   nom_depense: string | null;
+  tonnage: number | null;
+  prix: number | null;
   somme_depense: number | null;
   somme_restante: number | null;
   isSaved?: boolean;
@@ -71,6 +73,14 @@ const getMonthFromDate = (dateString: string): string => {
   const year = date.getFullYear();
   return `${MOIS_FRANCAIS[month]} ${year}`;
 };
+
+// Liste de dépenses prédéfinies pour l'auto-complétion
+const DEPENSES_PREDEFINIES = [
+  "achat Sesame",
+  "achat soza",
+  "achat karité",
+  "achat mais",
+];
 
 // Fonction pour trier les lignes par ordre d'insertion (comme dans SuiviClients)
 const sortRowsByInsertionOrder = (rows: EmployeeExpenseRow[]): EmployeeExpenseRow[] => {
@@ -211,6 +221,9 @@ export default function SuiviEmployes() {
             employee: currentEmployee.full_name,
             somme_remise: item.somme_remise ? parseFloat(item.somme_remise) : null,
             nom_depense: item.nom_depense ?? null,
+            // Ces champs n'existent peut‑être pas côté API : on les initialise donc à null
+            tonnage: item.tonnage ? parseFloat(item.tonnage) : null,
+            prix: item.prix ? parseFloat(item.prix) : null,
             somme_depense: item.somme_depense ? parseFloat(item.somme_depense) : null,
             somme_restante: item.somme_restante ? parseFloat(item.somme_restante) : null,
             isSaved: true,
@@ -295,12 +308,48 @@ export default function SuiviEmployes() {
       // Mettre à jour la ligne modifiée
       const updatedRows = prevRows.map(row => {
         if (row.id === id) {
+          // Si la somme dépense est issue de Tonnage x Prix, empêcher sa modification directe
+          if (
+            field === "somme_depense" &&
+            row.tonnage !== null && row.tonnage !== undefined &&
+            row.prix !== null && row.prix !== undefined
+          ) {
+            return row;
+          }
+
           // Convertir les valeurs vides en null
           const updatedValue = value === "" || value === null || value === undefined 
             ? null 
             : (typeof value === "string" ? value : value);
-          
-          return { ...row, [field]: updatedValue };
+
+          let updatedRow: EmployeeExpenseRow = { ...row, [field]: updatedValue };
+
+          // Si tonnage ou prix change, recalculer automatiquement la somme dépensée
+          if (field === "tonnage" || field === "prix") {
+            const tonnage =
+              updatedRow.tonnage !== null && updatedRow.tonnage !== undefined
+                ? Number(updatedRow.tonnage)
+                : null;
+            const prix =
+              updatedRow.prix !== null && updatedRow.prix !== undefined
+                ? Number(updatedRow.prix)
+                : null;
+
+            if (tonnage !== null && prix !== null) {
+              updatedRow = {
+                ...updatedRow,
+                somme_depense: tonnage * prix,
+              };
+            } else {
+              // Si l'un des deux est manquant, on remet la somme dépensée à null
+              updatedRow = {
+                ...updatedRow,
+                somme_depense: null,
+              };
+            }
+          }
+
+          return updatedRow;
         }
         return row;
       });
@@ -326,6 +375,8 @@ export default function SuiviEmployes() {
       employee: currentEmployee.full_name,
       somme_remise: null,
       nom_depense: null,
+      tonnage: null,
+      prix: null,
       somme_depense: null,
       somme_restante: null,
       isSaved: false,
@@ -484,6 +535,8 @@ export default function SuiviEmployes() {
           employee: currentEmployee.id,
           somme_remise: row.somme_remise ?? 0,
           nom_depense: row.nom_depense ?? "",
+          tonnage: row.tonnage ?? null,
+          prix: row.prix ?? null,
           somme_depense: row.somme_depense ?? 0,
           notes: "",
         };
@@ -882,6 +935,11 @@ export default function SuiviEmployes() {
 
   return (
     <DashboardLayout>
+      <datalist id="noms-depenses">
+        {DEPENSES_PREDEFINIES.map((depense) => (
+          <option key={depense} value={depense} />
+        ))}
+      </datalist>
       <div className="flex flex-col h-full">
         <div className="flex-shrink-0 mb-4">
           <PageHeader
@@ -950,7 +1008,9 @@ export default function SuiviEmployes() {
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-xl text-card-foreground w-[50px] bg-muted">N°</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-lg text-card-foreground w-[140px] bg-muted">Date</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Somme remise</th>
-                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[200px] bg-muted">Nom de la dépense</th>
+                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-left font-semibold text-xl text-card-foreground min-w-[320px] bg-muted">Nom de la dépense</th>
+                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[100px] bg-muted">Tonnage</th>
+                    <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[90px] bg-muted">Prix du jour</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-semibold text-xl text-card-foreground min-w-[150px] bg-muted">Somme dépense</th>
                     <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-right font-bold text-xl text-card-foreground min-w-[150px] bg-muted">Somme restante</th>
                     <th className="px-0.5 py-2 text-center font-semibold text-xl text-card-foreground w-7 bg-muted">#</th>
@@ -1009,11 +1069,46 @@ export default function SuiviEmployes() {
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">
                           <Input
                             type="text"
+                            list="noms-depenses"
                             value={row.nom_depense || ""}
                             onChange={(e) => updateCell(row.id, "nom_depense", e.target.value)}
                             className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default"
                             disabled={row.isSaved}
                           />
+                        </td>
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                          <div className="flex items-center gap-1 px-1 justify-end">
+                            <Input
+                              type="text"
+                              value={row.tonnage !== null && row.tonnage !== undefined ? formatNumber(row.tonnage) : ""}
+                              onChange={(e) => {
+                                const cleaned = e.target.value.replace(/\s/g, "").replace(",", ".");
+                                const num = cleaned === "" ? null : Number(cleaned);
+                                updateCell(row.id, "tonnage", isNaN(num as number) ? null : num);
+                              }}
+                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground flex-1 disabled:opacity-100 disabled:cursor-default"
+                              placeholder="-"
+                              disabled={row.isSaved}
+                            />
+                            <span className="text-base font-medium text-muted-foreground">kg</span>
+                          </div>
+                        </td>
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                          <div className="flex items-center gap-1 px-1">
+                            <Input
+                              type="text"
+                              value={row.prix !== null && row.prix !== undefined ? formatNumber(row.prix) : ""}
+                              onChange={(e) => {
+                                const cleaned = e.target.value.replace(/\s/g, "").replace(",", ".");
+                                const num = cleaned === "" ? null : Number(cleaned);
+                                updateCell(row.id, "prix", isNaN(num as number) ? null : num);
+                              }}
+                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground flex-1 disabled:opacity-100 disabled:cursor-default"
+                              placeholder="-"
+                              disabled={row.isSaved}
+                            />
+                            <span className="text-base font-medium text-foreground">F</span>
+                          </div>
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">
                           <div className="flex items-center gap-1 px-1">
@@ -1025,9 +1120,14 @@ export default function SuiviEmployes() {
                                 const num = cleaned === "" ? null : Number(cleaned);
                                 updateCell(row.id, "somme_depense", isNaN(num as number) ? null : num);
                               }}
-                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground flex-1 disabled:opacity-100 disabled:cursor-default"
+                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground flex-1 disabled:opacity-100 disabled:cursor-not-allowed"
                               placeholder="0"
-                              disabled={row.isSaved}
+                              // Inmodifiable si la somme dépense est issue de Tonnage x Prix
+                              disabled={
+                                row.isSaved ||
+                                (row.tonnage !== null && row.tonnage !== undefined &&
+                                 row.prix !== null && row.prix !== undefined)
+                              }
                             />
                             {row.somme_depense !== null && row.somme_depense !== undefined && row.somme_depense > 0 && (
                               <span className="text-base font-medium text-foreground">F</span>

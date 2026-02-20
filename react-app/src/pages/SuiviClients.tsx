@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
@@ -150,6 +150,12 @@ export default function SuiviClients() {
   const [rows, setRows] = useState<ClientChargementRow[]>([]);
   // État temporaire pour la saisie texte du poids (permet d'écrire 79,05 sans perdre la virgule)
   const [poidsInputs, setPoidsInputs] = useState<Record<number, string>>({});
+  // État temporaire pour la saisie texte du tonnage (permet d'écrire 79,05 sans perdre la virgule)
+  const [tonnageInputs, setTonnageInputs] = useState<Record<number, string>>({});
+  // État pour suivre si le tonnage a été saisi manuellement (pour éviter le recalcul automatique)
+  const [tonnageManuel, setTonnageManuel] = useState<Record<number, boolean>>({});
+  // Ref pour accéder à l'état tonnageManuel dans updateCell
+  const tonnageManuelRef = useRef<Record<number, boolean>>({});
   const [nextId, setNextId] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
   const [savingRowId, setSavingRowId] = useState<number | null>(null);
@@ -269,6 +275,11 @@ export default function SuiviClients() {
     loadChargements();
   }, [clientId, currentClient]);
 
+  // Synchroniser le ref avec l'état tonnageManuel
+  useEffect(() => {
+    tonnageManuelRef.current = tonnageManuel;
+  }, [tonnageManuel]);
+
   // Enregistrer dans localStorage seulement les lignes non enregistrées
   useEffect(() => {
     if (clientId) {
@@ -345,21 +356,31 @@ export default function SuiviClients() {
           const updated = { ...row, [field]: numValue };
           
           // Calcul automatique du tonnage (nombre de sacs × poids) si les deux sont fournis
+          // Seulement si le tonnage n'a pas été saisi manuellement
           // Soustraire le poids des sacs vides si fourni
           if (field === "nombre_sacs" || field === "poids" || field === "poids_sac_vide") {
-            if (updated.nombre_sacs !== null && updated.poids !== null) {
-              const tonnage_brut = Number(updated.nombre_sacs) * Number(updated.poids);
-              
-              // Soustraire le poids des sacs vides si fourni
-              if (updated.poids_sac_vide !== null && updated.poids_sac_vide > 0) {
-                const poids_total_sacs_vides = Number(updated.nombre_sacs) * Number(updated.poids_sac_vide);
-                updated.tonnage = tonnage_brut - poids_total_sacs_vides;
+            // Ne pas recalculer si le tonnage a été saisi manuellement
+            if (!tonnageManuelRef.current[id]) {
+              if (updated.nombre_sacs !== null && updated.poids !== null) {
+                const tonnage_brut = Number(updated.nombre_sacs) * Number(updated.poids);
+                
+                // Soustraire le poids des sacs vides si fourni
+                if (updated.poids_sac_vide !== null && updated.poids_sac_vide > 0) {
+                  const poids_total_sacs_vides = Number(updated.nombre_sacs) * Number(updated.poids_sac_vide);
+                  updated.tonnage = tonnage_brut - poids_total_sacs_vides;
+                } else {
+                  updated.tonnage = tonnage_brut;
+                }
               } else {
-                updated.tonnage = tonnage_brut;
+                // Si nombre_sacs ou poids devient null, et que le tonnage n'a pas été saisi manuellement, le mettre à null
+                updated.tonnage = null;
               }
-            } else {
-              updated.tonnage = null;
             }
+          }
+          
+          // Si le tonnage est modifié directement, marquer comme saisi manuellement
+          if (field === "tonnage") {
+            setTonnageManuel(prev => ({ ...prev, [id]: true }));
           }
           
           // Recalculer la somme totale si tonnage ou prix change
@@ -732,6 +753,7 @@ export default function SuiviClients() {
         nombre_sacs: row.nombre_sacs ?? null,
         poids: row.poids ?? null,
         poids_sac_vide: row.poids_sac_vide ?? null,
+        tonnage: row.tonnage ?? null,
         prix: row.prix ?? null,
         somme_totale: row.somme_totale ?? null, // Inclure somme_totale pour les lignes de règlement et fin de compte
         avance: row.avance ?? 0,
@@ -838,6 +860,7 @@ export default function SuiviClients() {
           nombre_sacs: row.nombre_sacs ?? null,
           poids: row.poids ?? null,
           poids_sac_vide: row.poids_sac_vide ?? null,
+          tonnage: row.tonnage ?? null,
           prix: row.prix ?? null,
           somme_totale: row.somme_totale ?? null, // Inclure somme_totale pour les lignes de règlement et fin de compte
           avance: row.avance ?? 0,
@@ -1166,14 +1189,56 @@ export default function SuiviClients() {
                             />
                           </div>
                         </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-xl text-foreground bg-muted/20">
-                          {row.tonnage !== null && row.tonnage !== undefined ? (
-                            <span className="block w-full text-right text-lg">
-                              {formatNumber(row.tonnage)} <span className="text-base">kg</span>
-                            </span>
-                          ) : (
-                            <span className="block w-full text-right text-lg">-</span>
-                          )}
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                          <div className="flex items-center justify-end">
+                            <Input
+                              type="text"
+                              value={
+                                tonnageInputs[row.id] !== undefined
+                                  ? tonnageInputs[row.id]
+                                  : row.tonnage !== null && row.tonnage !== undefined
+                                    ? formatNumber(row.tonnage)
+                                    : ""
+                              }
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                // Mémoriser exactement ce que tape l'utilisateur (avec virgule)
+                                setTonnageInputs((prev) => ({
+                                  ...prev,
+                                  [row.id]: raw,
+                                }));
+
+                                const cleaned = raw.replace(/\s/g, "").replace(",", ".");
+
+                                if (cleaned === "") {
+                                  updateCell(row.id, "tonnage", null);
+                                  setTonnageManuel(prev => {
+                                    const newState = { ...prev };
+                                    delete newState[row.id];
+                                    return newState;
+                                  });
+                                  return;
+                                }
+
+                                const num = Number(cleaned);
+                                if (!isNaN(num)) {
+                                  updateCell(row.id, "tonnage", num);
+                                }
+                              }}
+                              onBlur={() => {
+                                // À la sortie du champ, revenir à l'affichage formaté standard
+                                setTonnageInputs((prev) => {
+                                  const { [row.id]: _omit, ...rest } = prev;
+                                  return rest;
+                                });
+                              }}
+                              className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-xl md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default flex-1"
+                              disabled={row.isSaved && savingRowId !== row.id}
+                            />
+                            {row.tonnage !== null && row.tonnage !== undefined && (
+                              <span className="text-base text-muted-foreground px-1">kg</span>
+                            )}
+                          </div>
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">
                           <div className="flex items-center justify-end">

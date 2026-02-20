@@ -69,6 +69,26 @@ class EmployeeExpense(models.Model):
         blank=True,
         null=True
     )
+    # Nouveau : tonnage lié à la dépense (en kg)
+    tonnage = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name="Tonnage",
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Tonnage correspondant à la dépense (en kg)."
+    )
+    # Nouveau : prix unitaire appliqué (prix du jour)
+    prix = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        verbose_name="Prix du jour",
+        null=True,
+        blank=True,
+        default=None,
+        help_text="Prix unitaire du jour utilisé pour calculer la somme dépensée."
+    )
     somme_depense = models.DecimalField(
         max_digits=12, 
         decimal_places=2, 

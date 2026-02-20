@@ -91,7 +91,7 @@ class EmployeeExpenseSerializer(serializers.ModelSerializer):
         model = EmployeeExpense
         fields = [
             'id', 'date', 'employee', 'employee_name', 'somme_remise',
-            'nom_depense', 'somme_depense', 'somme_restante', 'notes',
+            'nom_depense', 'tonnage', 'prix', 'somme_depense', 'somme_restante', 'notes',
             'created_by', 'created_by_username', 'created_at', 'updated_at'
         ]
         read_only_fields = ['somme_restante', 'created_at', 'updated_at', 'created_by']
@@ -103,7 +103,7 @@ class EmployeeExpenseCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeExpense
         fields = [
-            'date', 'employee', 'somme_remise', 'nom_depense', 'somme_depense', 'notes'
+            'date', 'employee', 'somme_remise', 'nom_depense', 'tonnage', 'prix', 'somme_depense', 'notes'
         ]
 
     def create(self, validated_data):
@@ -119,6 +119,6 @@ class EmployeeExpenseListSerializer(serializers.ModelSerializer):
         model = EmployeeExpense
         fields = [
             'id', 'date', 'employee_name', 'somme_remise',
-            'nom_depense', 'somme_depense', 'somme_restante', 'created_at'
+            'nom_depense', 'tonnage', 'prix', 'somme_depense', 'somme_restante', 'created_at'
         ]
 
