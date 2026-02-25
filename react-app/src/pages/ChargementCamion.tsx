@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/config/api";
@@ -184,6 +184,12 @@ export default function ChargementCamion() {
   const [transportDialogOpen, setTransportDialogOpen] = useState(false);
   const [transportRowId, setTransportRowId] = useState<number | null>(null);
   const [transportAmount, setTransportAmount] = useState<string>("");
+  // État pour suivre si le tonnage a été saisi manuellement (pour éviter le recalcul automatique)
+  const [tonnageManuel, setTonnageManuel] = useState<Record<number, boolean>>({});
+  // Saisie texte temporaire pour le tonnage (permet d'écrire 79,05 sans perdre la virgule)
+  const [tonnageInputs, setTonnageInputs] = useState<Record<number, string>>({});
+  // Ref pour accéder à l'état tonnageManuel dans updateCell (évite les problèmes de fermeture)
+  const tonnageManuelRef = useRef<Record<number, boolean>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -285,6 +291,11 @@ export default function ChargementCamion() {
     fetchHistory();
   }, []);
 
+  // Garder le ref synchronisé avec l'état tonnageManuel
+  useEffect(() => {
+    tonnageManuelRef.current = tonnageManuel;
+  }, [tonnageManuel]);
+
   // Enregistrer dans localStorage seulement les lignes non Enregistrées
   useEffect(() => {
     const unsavedRows = rows.filter(r => !r.isSaved);
@@ -351,8 +362,34 @@ export default function ChargementCamion() {
         }
         
         // Calcul automatique du tonnage total
-        if (field === "nombre_sacs" || field === "poids_par_sac") {
-          updated.tonnage_total = Number(updated.nombre_sacs) * Number(updated.poids_par_sac);
+        // Seulement si le tonnage n'a pas été saisi manuellement
+        if ((field === "nombre_sacs" || field === "poids_par_sac") && !tonnageManuelRef.current[id]) {
+          // Calculer seulement si nombre_sacs ET poids_par_sac sont tous les deux remplis
+          if (updated.nombre_sacs > 0 && updated.poids_par_sac > 0) {
+            updated.tonnage_total = Number(updated.nombre_sacs) * Number(updated.poids_par_sac);
+          } else {
+            // Si l'un des deux est vide, ne pas modifier le tonnage (il peut avoir été saisi manuellement)
+            // Sauf si les deux sont vides, alors mettre à 0
+            if ((!updated.nombre_sacs || updated.nombre_sacs <= 0) && (!updated.poids_par_sac || updated.poids_par_sac <= 0)) {
+              updated.tonnage_total = 0;
+            }
+          }
+        }
+        
+        // Si le tonnage est modifié directement, marquer comme saisi manuellement
+        // Sauf si le tonnage est mis à 0 ou vide, alors réinitialiser le flag pour permettre le recalcul
+        if (field === "tonnage_total") {
+          const tonnageValue = value === null || value === "" ? 0 : Number(value);
+          if (tonnageValue > 0) {
+            setTonnageManuel(prev => ({ ...prev, [id]: true }));
+          } else {
+            // Si le tonnage est mis à 0 ou vide, réinitialiser le flag pour permettre le recalcul
+            setTonnageManuel(prev => {
+              const newState = { ...prev };
+              delete newState[id];
+              return newState;
+            });
+          }
         }
         // Calcul automatique du poids manquant
         if (field === "poids_arrive" || field === "tonnage_total") {
@@ -507,7 +544,14 @@ export default function ChargementCamion() {
     setRows(prevRows =>
       prevRows.map(row =>
         row.id === transportRowId
-          ? { ...row, depenses: (row.depenses || 0) + numValue }
+          ? (() => {
+              // Forcer les valeurs en nombres entiers pour éviter les problèmes de flottants
+              const currentRaw = Number(row.depenses || 0);
+              const current = isNaN(currentRaw) ? 0 : currentRaw;
+              const toAdd = Math.round(numValue);
+              const sum = current + toAdd;
+              return { ...row, depenses: sum };
+            })()
           : row
       )
     );
@@ -521,14 +565,38 @@ export default function ChargementCamion() {
     // Permettre l'enregistrement si la ligne est complètement vide
     const isRowEmpty = !row.date_chargement && !row.type_denree?.trim() && 
                        (!row.nombre_sacs || row.nombre_sacs <= 0) && 
-                       (!row.poids_par_sac || row.poids_par_sac <= 0);
+                       (!row.poids_par_sac || row.poids_par_sac <= 0) &&
+                       (!row.tonnage_total || row.tonnage_total <= 0);
     if (isRowEmpty) return null;
     
     // Si au moins un champ est rempli, valider les champs requis
     if (!row.date_chargement) return "La date est requise";
     if (!row.type_denree.trim()) return "Le type de produits est requis";
+    
+    // Le tonnage doit être rempli (soit directement, soit calculé via nombre_sacs × poids_par_sac)
+    const hasTonnage = row.tonnage_total > 0;
+    const hasNombreSacs = row.nombre_sacs > 0;
+    const hasPoidsParSac = row.poids_par_sac > 0;
+    
+    // Si le tonnage est rempli, c'est OK (peu importe nombre_sacs et poids_par_sac)
+    if (hasTonnage) {
+      // Vérifier que le tonnage est valide
+      if (row.tonnage_total <= 0) return "Le tonnage doit être supérieur à 0";
+      // Si nombre_sacs ou poids_par_sac sont remplis, vérifier qu'ils sont valides
+      if (hasNombreSacs && row.nombre_sacs <= 0) return "Le nombre de sacs doit être supérieur à 0";
+      if (hasPoidsParSac && row.poids_par_sac <= 0) return "Le poids par sac doit être supérieur à 0";
+      return null; // Tonnage rempli, validation OK
+    }
+    
+    // Si pas de tonnage, alors nombre_sacs ET poids_par_sac doivent être remplis pour le calculer
+    if (!hasNombreSacs || !hasPoidsParSac) {
+      return "Le tonnage doit être rempli, ou le nombre de sacs et le poids par sac";
+    }
+    
+    // Vérifier que nombre_sacs et poids_par_sac sont valides
     if (row.nombre_sacs <= 0) return "Le nombre de sacs doit être supérieur à 0";
     if (row.poids_par_sac <= 0) return "Le poids par sac doit être supérieur à 0";
+    
     return null;
   };
 
@@ -555,7 +623,8 @@ export default function ChargementCamion() {
         destination: row.ville_arrivee || "",
         type_denree: row.type_denree,
         nombre_sacs: row.nombre_sacs,
-        poids_par_sac: row.poids_par_sac,
+        poids_par_sac: row.poids_par_sac || 0,
+        tonnage_total: row.tonnage_total || null,
         numero_camion: row.numero_camion || "",
         numero_chauffeur: row.numero_chauffeur || "",
         date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
@@ -726,9 +795,9 @@ export default function ChargementCamion() {
           ? Math.max(0, row.tonnage_total - Number(row.poids_arrive))
           : null);
       
-      const totalTransfort = row.benefices || 0;
-      const transportDonne = row.depenses || 0;
-      const restant = Math.max(0, totalTransfort - transportDonne);
+      const totalTransfort = Number(row.benefices || 0) || 0;
+      const transportDonne = Number(row.depenses || 0) || 0;
+      const restant = Math.max(0, Math.round(totalTransfort - transportDonne));
       
       // Tableau vertical sans header, juste les données
       const tableData = [
@@ -860,7 +929,8 @@ export default function ChargementCamion() {
         destination: row.ville_arrivee || "",
         type_denree: row.type_denree,
         nombre_sacs: row.nombre_sacs,
-        poids_par_sac: row.poids_par_sac,
+        poids_par_sac: row.poids_par_sac || 0,
+        tonnage_total: row.tonnage_total || null,
         numero_camion: row.numero_camion || "",
         numero_chauffeur: row.numero_chauffeur || "",
         date_arrivee: row.date_arrivee || null,
@@ -976,6 +1046,7 @@ export default function ChargementCamion() {
           type_denree: row.type_denree,
           nombre_sacs: row.nombre_sacs,
           poids_par_sac: row.poids_par_sac,
+          tonnage_total: row.tonnage_total || null,
           numero_camion: row.numero_camion || "",
           numero_chauffeur: row.numero_chauffeur || "",
           date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
@@ -1031,6 +1102,7 @@ export default function ChargementCamion() {
           type_denree: row.type_denree,
           nombre_sacs: row.nombre_sacs,
           poids_par_sac: row.poids_par_sac,
+          tonnage_total: row.tonnage_total || null,
           numero_camion: row.numero_camion || "",
           numero_chauffeur: row.numero_chauffeur || "",
           date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
@@ -1250,9 +1322,10 @@ export default function ChargementCamion() {
                         }
                       }
                       const hasPoidsManquant = poidsManquantValue !== null && poidsManquantValue !== undefined && poidsManquantValue > 0;
-                      const totalTransfort = row.benefices || 0;
-                      const transportDonne = row.depenses || 0;
-                      const restant = Math.max(0, totalTransfort - transportDonne);
+                      const totalTransfort = Number(row.benefices || 0) || 0;
+                      const transportDonne = Number(row.depenses || 0) || 0;
+                      // Arrondir le restant à l'unité pour éviter les décimales parasites
+                      const restant = Math.max(0, Math.round(totalTransfort - transportDonne));
                 
                 return (
                   <tr 
@@ -1329,10 +1402,47 @@ export default function ChargementCamion() {
                       step="0.01"
                     />
                   </td>
-                        <td className="border-r border-gray-400 dark:border-gray-600 px-1 py-1 text-right font-medium text-sm md:text-xl text-foreground bg-muted/20">
-                    <span className="block w-full text-right text-sm md:text-lg">
-                      {row.tonnage_total.toLocaleString()} <span className="text-xs md:text-base">kg</span>
-                    </span>
+                  <td className="border-r border-gray-400 dark:border-gray-600 p-0">
+                    <div className="flex items-center justify-end">
+                      <Input
+                        type="text"
+                        value={
+                          tonnageInputs[row.id] !== undefined
+                            ? tonnageInputs[row.id]
+                            : row.tonnage_total && row.tonnage_total > 0
+                              ? formatNumberWithSpaces(row.tonnage_total)
+                              : ""
+                        }
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          // Nettoyer : enlever les espaces et remplacer la virgule par un point
+                          const cleaned = raw.replace(/\s/g, "").replace(",", ".");
+
+                          if (cleaned === "") {
+                            setTonnageInputs(prev => ({ ...prev, [row.id]: "" }));
+                            updateCell(row.id, "tonnage_total", null);
+                            return;
+                          }
+
+                          const num = Number(cleaned);
+                          if (!isNaN(num)) {
+                            const formatted = formatNumberWithSpaces(num);
+                            setTonnageInputs(prev => ({ ...prev, [row.id]: formatted }));
+                            updateCell(row.id, "tonnage_total", num);
+                          }
+                        }}
+                        onBlur={() => {
+                          // À la sortie du champ, revenir à l'affichage standard géré par value
+                          setTonnageInputs(prev => {
+                            const { [row.id]: _omit, ...rest } = prev;
+                            return rest;
+                          });
+                        }}
+                        className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-right text-sm md:text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
+                        disabled={row.isSaved && savingRowId !== row.id}
+                      />
+                      <span className="text-xs md:text-base text-muted-foreground px-1">kg</span>
+                    </div>
                   </td>
                   <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[120px] md:min-w-[150px]">
                           <Input

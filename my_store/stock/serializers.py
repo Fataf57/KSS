@@ -113,7 +113,7 @@ class CamionChargementSerializer(serializers.ModelSerializer):
             'numero_magasin_display', 'destination', 'chauffeur', 'depenses', 'benefices', 'notes', 
             'created_by', 'created_by_username', 'created_at', 'updated_at', 'stock_items'
         ]
-        read_only_fields = ['tonnage_total', 'poids_manquant', 'created_at', 'updated_at', 'created_by']
+        read_only_fields = ['poids_manquant', 'created_at', 'updated_at', 'created_by']
     
     def get_poids_manquant(self, obj):
         """Retourne le poids manquant calculé"""
@@ -135,9 +135,12 @@ class CamionChargementCreateSerializer(serializers.ModelSerializer):
         model = CamionChargement
         fields = [
             'date_chargement', 'ville_depart', 'type_denree', 'nombre_sacs',
-            'poids_par_sac', 'numero_camion', 'numero_chauffeur', 'date_arrivee',
+            'poids_par_sac', 'tonnage_total', 'numero_camion', 'numero_chauffeur', 'date_arrivee',
             'poids_arrive', 'numero_magasin', 'destination', 'chauffeur', 'depenses', 'benefices', 'notes', 'stock_items'
         ]
+        extra_kwargs = {
+            'tonnage_total': {'required': False, 'allow_null': True},
+        }
 
     def create(self, validated_data):
         stock_items_data = validated_data.pop('stock_items', [])

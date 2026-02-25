@@ -136,7 +136,13 @@ class CamionChargement(models.Model):
 
     def save(self, *args, **kwargs):
         # Calcul automatique du tonnage total
-        self.tonnage_total = Decimal(self.nombre_sacs) * Decimal(self.poids_par_sac)
+        # Seulement si nombre_sacs ET poids_par_sac sont tous les deux remplis
+        # Et seulement si le tonnage n'a pas déjà été défini (pour permettre la saisie manuelle)
+        if self.nombre_sacs > 0 and self.poids_par_sac > 0:
+            # Si le tonnage est 0 ou None, le calculer automatiquement
+            if not self.tonnage_total or self.tonnage_total == 0:
+                self.tonnage_total = Decimal(self.nombre_sacs) * Decimal(self.poids_par_sac)
+            # Sinon, le tonnage a été saisi manuellement, on le garde tel quel
         super().save(*args, **kwargs)
     
     @property
