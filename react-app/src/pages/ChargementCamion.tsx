@@ -33,6 +33,7 @@ interface ChargementRow {
   tonnage_total: number;
   numero_camion: string;
   numero_chauffeur: string;
+  proprietaire: string;
   date_arrivee: string;
   poids_arrive: number | null;
   poids_manquant: number | null;
@@ -227,6 +228,7 @@ export default function ChargementCamion() {
           tonnage_total: tonnageTotal,
           numero_camion: entry.numero_camion || "",
           numero_chauffeur: entry.numero_chauffeur || "",
+          proprietaire: entry.proprietaire || "",
           date_arrivee: entry.date_arrivee || "",
           poids_arrive: poidsArrive,
           poids_manquant: poidsManquant,
@@ -418,6 +420,7 @@ export default function ChargementCamion() {
       tonnage_total: 0,
       numero_camion: "",
       numero_chauffeur: "",
+      proprietaire: "",
       date_arrivee: "",
       poids_arrive: null,
       poids_manquant: null,
@@ -627,6 +630,7 @@ export default function ChargementCamion() {
         tonnage_total: row.tonnage_total || null,
         numero_camion: row.numero_camion || "",
         numero_chauffeur: row.numero_chauffeur || "",
+        proprietaire: row.proprietaire || "",
         date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
         poids_arrive: row.poids_arrive || null,
         depenses: row.depenses || 0,
@@ -809,6 +813,7 @@ export default function ChargementCamion() {
         ["Tonnage", row.tonnage_total && row.tonnage_total > 0 ? `${formatNumber(row.tonnage_total)} kg` : ""],
         ["N° camion", row.numero_camion || ""],
         ["N° chauffeur", formatChauffeur(row.numero_chauffeur || "") || ""],
+        ["Proprietaire", row.proprietaire || ""],
         ["Poid arrivé", row.poids_arrive && row.poids_arrive > 0 ? `${formatNumber(row.poids_arrive)} kg` : ""],
         ["Poids manqué", poidsManquantValue !== null && poidsManquantValue !== undefined && poidsManquantValue > 0
           ? `${formatNumber(poidsManquantValue)} kg`
@@ -933,6 +938,7 @@ export default function ChargementCamion() {
         tonnage_total: row.tonnage_total || null,
         numero_camion: row.numero_camion || "",
         numero_chauffeur: row.numero_chauffeur || "",
+        proprietaire: row.proprietaire || "",
         date_arrivee: row.date_arrivee || null,
         poids_arrive: row.poids_arrive || null,
         depenses: row.depenses || 0,
@@ -1049,6 +1055,7 @@ export default function ChargementCamion() {
           tonnage_total: row.tonnage_total || null,
           numero_camion: row.numero_camion || "",
           numero_chauffeur: row.numero_chauffeur || "",
+          proprietaire: row.proprietaire || "",
           date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
           poids_arrive: row.poids_arrive || null,
           depenses: row.depenses || 0,
@@ -1105,6 +1112,7 @@ export default function ChargementCamion() {
           tonnage_total: row.tonnage_total || null,
           numero_camion: row.numero_camion || "",
           numero_chauffeur: row.numero_chauffeur || "",
+          proprietaire: row.proprietaire || "",
           date_arrivee: row.date_arrivee ? convertDateToAPI(row.date_arrivee) : null,
           poids_arrive: row.poids_arrive || null,
           depenses: row.depenses || 0,
@@ -1303,6 +1311,7 @@ export default function ChargementCamion() {
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[80px] md:min-w-[100px] bg-muted">Tonnage</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° camion</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">N° chauffeur</th>
+                      <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-lg text-card-foreground min-w-[120px] md:min-w-[150px] bg-muted">Proprietaire</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[100px] md:min-w-[120px] bg-muted">Poid arrivé</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[70px] md:min-w-[80px] bg-muted">Poids manqué</th>
                       <th className="border-r border-gray-400 dark:border-gray-600 px-1 py-2 text-center font-semibold text-sm md:text-xl text-card-foreground min-w-[130px] md:min-w-[150px] bg-muted">Total Transport</th>
@@ -1461,6 +1470,14 @@ export default function ChargementCamion() {
                               updateCell(row.id, "numero_chauffeur", cleaned);
                             }}
                             className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-base font-medium text-foreground"
+                          />
+                        </td>
+                        <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[120px] md:min-w-[150px]">
+                          <Input
+                            type="text"
+                            value={row.proprietaire || ""}
+                            onChange={(e) => updateCell(row.id, "proprietaire", e.target.value)}
+                            className="border-0 rounded-none h-9 bg-transparent focus:bg-accent/10 text-sm md:text-lg font-medium text-foreground"
                           />
                         </td>
                         <td className="border-r border-gray-400 dark:border-gray-600 p-0">

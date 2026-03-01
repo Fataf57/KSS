@@ -91,6 +91,7 @@ class CamionChargement(models.Model):
     )
     numero_camion = models.CharField(max_length=100, verbose_name="Numéro de camion", blank=True)
     numero_chauffeur = models.CharField(max_length=200, verbose_name="Numéro de chauffeur", blank=True)
+    proprietaire = models.CharField(max_length=200, verbose_name="Proprietaire", blank=True)
     date_arrivee = models.DateField(verbose_name="Date d'arrivée", null=True, blank=True)
     poids_arrive = models.DecimalField(
         max_digits=12, 

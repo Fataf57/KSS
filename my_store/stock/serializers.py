@@ -108,7 +108,7 @@ class CamionChargementSerializer(serializers.ModelSerializer):
         model = CamionChargement
         fields = [
             'id', 'date_chargement', 'ville_depart', 'type_denree', 'nombre_sacs',
-            'poids_par_sac', 'tonnage_total', 'numero_camion', 'numero_chauffeur',
+            'poids_par_sac', 'tonnage_total', 'numero_camion', 'numero_chauffeur', 'proprietaire',
             'date_arrivee', 'poids_arrive', 'poids_manquant', 'numero_magasin', 
             'numero_magasin_display', 'destination', 'chauffeur', 'depenses', 'benefices', 'notes', 
             'created_by', 'created_by_username', 'created_at', 'updated_at', 'stock_items'
@@ -135,7 +135,7 @@ class CamionChargementCreateSerializer(serializers.ModelSerializer):
         model = CamionChargement
         fields = [
             'date_chargement', 'ville_depart', 'type_denree', 'nombre_sacs',
-            'poids_par_sac', 'tonnage_total', 'numero_camion', 'numero_chauffeur', 'date_arrivee',
+            'poids_par_sac', 'tonnage_total', 'numero_camion', 'numero_chauffeur', 'proprietaire', 'date_arrivee',
             'poids_arrive', 'numero_magasin', 'destination', 'chauffeur', 'depenses', 'benefices', 'notes', 'stock_items'
         ]
         extra_kwargs = {
@@ -191,7 +191,7 @@ class CamionChargementListSerializer(serializers.ModelSerializer):
         model = CamionChargement
         fields = [
             'id', 'date_chargement', 'ville_depart', 'type_denree', 'nombre_sacs',
-            'poids_par_sac', 'tonnage_total', 'numero_camion', 'numero_chauffeur',
+            'poids_par_sac', 'tonnage_total', 'numero_camion', 'numero_chauffeur', 'proprietaire',
             'date_arrivee', 'poids_arrive', 'poids_manquant', 'numero_magasin', 
             'numero_magasin_display', 'destination', 'chauffeur', 'depenses', 'benefices', 'created_at'
         ]
