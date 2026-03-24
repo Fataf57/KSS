@@ -70,6 +70,8 @@ export default function Achats() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [entreeToDelete, setEntreeToDelete] = useState<number | null>(null);
+  // Suivi des lignes dont le tonnage est saisi manuellement
+  const [tonnageManuel, setTonnageManuel] = useState<Record<number, boolean>>({});
   const [newEntree, setNewEntree] = useState<EntreeAchat>({
     date: new Date().toISOString().split('T')[0],
     nom_client: "",
@@ -148,6 +150,7 @@ export default function Achats() {
   };
 
   const handleOpenDialog = () => {
+    setTonnageManuel({});
     setNewEntree({
       date: new Date().toISOString().split('T')[0],
       nom_client: "",
@@ -171,6 +174,7 @@ export default function Achats() {
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
+    setTonnageManuel({});
     setNewEntree({
       date: new Date().toISOString().split('T')[0],
       nom_client: "",
@@ -210,6 +214,16 @@ export default function Achats() {
   const handleRemoveLigne = (index: number) => {
     const newAchats = newEntree.achats?.filter((_, i) => i !== index) || [];
     setNewEntree({ ...newEntree, achats: newAchats });
+    // Recaler les index de suivi tonnage manuel après suppression
+    setTonnageManuel((prev) => {
+      const next: Record<number, boolean> = {};
+      Object.entries(prev).forEach(([key, val]) => {
+        const i = Number(key);
+        if (i < index) next[i] = val;
+        if (i > index) next[i - 1] = val;
+      });
+      return next;
+    });
   };
 
   const handleUpdateLigne = (index: number, field: keyof LigneAchat, value: string | number | null) => {
@@ -223,11 +237,30 @@ export default function Achats() {
       const numValue = value === "" || value === null ? 0 : Number(value);
       newAchats[index] = { ...newAchats[index], [field]: numValue };
       
-      // Calculer automatiquement la quantité (Tonnage) = Nbr sac × Poids sac
+      // Calcul auto du tonnage, sauf si saisi manuellement pour cette ligne
       if (field === 'gros' || field === 'unit') {
         const gros = field === 'gros' ? numValue : (newAchats[index].gros || 0);
         const unit = field === 'unit' ? numValue : (newAchats[index].unit || 0);
-        newAchats[index].quantite_kg = gros * unit;
+        if (!tonnageManuel[index]) {
+          if (gros > 0 && unit > 0) {
+            newAchats[index].quantite_kg = gros * unit;
+          } else if (gros <= 0 && unit <= 0) {
+            newAchats[index].quantite_kg = 0;
+          }
+        }
+      }
+
+      // Si tonnage saisi directement, marquer comme manuel
+      if (field === 'quantite_kg') {
+        setTonnageManuel((prev) => {
+          const next = { ...prev };
+          if (numValue > 0) {
+            next[index] = true;
+          } else {
+            delete next[index];
+          }
+          return next;
+        });
       }
       
       // Calculer le montant automatiquement
@@ -975,7 +1008,17 @@ export default function Achats() {
                         />
                       </td>
                       <td className="border-r border-gray-400 dark:border-gray-600 px-3 py-1 text-right font-medium text-xl text-foreground min-w-[120px]">
-                        {formatNumber(ligne.quantite_kg || 0)}
+                        <Input
+                          type="text"
+                          value={formatInputNumber(ligne.quantite_kg)}
+                          onChange={(e) => {
+                            const parsed = parseInputNumber(e.target.value);
+                            handleUpdateLigne(index, "quantite_kg", parsed);
+                          }}
+                          className="h-9 border-0 rounded-none bg-transparent focus:bg-accent/10 text-right text-xl font-medium text-foreground disabled:opacity-100 disabled:cursor-default"
+                          disabled={isSaving}
+                          placeholder="0"
+                        />
                       </td>
                       <td className="border-r border-gray-400 dark:border-gray-600 p-0 min-w-[130px]">
                         <Input
